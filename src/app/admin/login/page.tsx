@@ -42,7 +42,7 @@ export default function AdminLoginPage() {
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col items-center justify-center p-6 font-sans transition-colors duration-200">
 
             {/* Top bar */}
-            <div className="absolute top-0 left-0 right-0 h-16 flex items-center justify-between px-6 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-950">
+            <div className="absolute top-0 left-0 right-0 h-16 flex items-center justify-between px-6 border-b border-[#3b6154] dark:border-[#3b6154] bg-[#3b6154]">
                 <Link
                     href="/"
                     className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors group"
@@ -55,7 +55,7 @@ export default function AdminLoginPage() {
 
             <div className="w-full max-w-sm space-y-8 pt-8">
                 <div className="flex flex-col items-center space-y-3">
-                    <div className="bg-zinc-950 dark:bg-zinc-800 border border-zinc-800 dark:border-zinc-700 p-3.5 rounded-2xl shadow-xl text-white">
+                    <div className="bg-[#3b6154] border border-[#3b6154]/50 p-3.5 rounded-2xl shadow-xl text-white">
                         <UtensilsCrossed size={28} />
                     </div>
                     <div className="text-center">
@@ -95,7 +95,7 @@ export default function AdminLoginPage() {
 
                         <Button
                             type="submit"
-                            className="w-full h-12 text-base mt-2"
+                            className="w-full h-12 text-base mt-2 bg-[#3b6154] hover:bg-[#2b473e] text-white border-none shadow-md transition-colors"
                             disabled={isLoading}
                         >
                             {isLoading ? (

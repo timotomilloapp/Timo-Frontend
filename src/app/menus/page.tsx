@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { MenuCard } from '@/components/menus/MenuCard';
 import { menuService } from '@/services/menu-service';
+import { whitelistService } from '@/services/whitelist-service';
 import { Menu } from '@/types';
 
 // Helper to get Mon-Sat for the current week based on Colombia time
@@ -33,6 +34,7 @@ function getCurrentWeekDays(): Date[] {
 export default function MenusPage() {
     const router = useRouter();
     const [cedula, setCedula] = useState<string | null>(null);
+    const [userName, setUserName] = useState<string>('');
     const [weekDays, setWeekDays] = useState<Date[]>([]);
     const [menus, setMenus] = useState<Record<string, Menu | null>>({});
     const [isLoading, setIsLoading] = useState<Record<string, boolean>>({});
@@ -63,6 +65,11 @@ export default function MenusPage() {
         }
         setCedula(storedCedula);
 
+        const session = whitelistService.getSession();
+        if (session && session.name) {
+            setUserName(session.name);
+        }
+
         const days = getCurrentWeekDays();
         setWeekDays(days);
 
@@ -80,11 +87,11 @@ export default function MenusPage() {
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-200 flex flex-col">
 
             {/* Header */}
-            <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sticky top-0 z-10 shadow-sm">
+            <header className="bg-[#3b6154] sticky top-0 z-10 shadow-sm">
                 <div className="w-full px-4 lg:px-8 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <UtensilsCrossed size={16} className="text-zinc-500" />
-                        <span className="font-black tracking-tighter text-2xl text-zinc-900 dark:text-white leading-none">
+                        <UtensilsCrossed size={16} className="text-white" />
+                        <span className="font-black tracking-tighter text-2xl text-white leading-none">
                             TIMO.
                         </span>
                     </div>
@@ -92,13 +99,13 @@ export default function MenusPage() {
                     <div className="flex items-center gap-4">
                         <ThemeToggle />
 
-                        <div className="flex items-center gap-2 pl-4 border-l border-zinc-200 dark:border-zinc-800">
-                            <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 hidden sm:block">
+                        <div className="flex items-center gap-2 pl-4 border-l border-white/20">
+                            <span className="text-xs font-semibold uppercase tracking-widest text-white/80 hidden sm:block">
                                 C.C: {cedula}
                             </span>
                             <button
                                 onClick={handleLogout}
-                                className="group relative flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-200"
+                                className="group relative flex items-center gap-2 px-3 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200"
                                 title="Cerrar sesión"
                             >
                                 <LogOut size={16} />
@@ -107,7 +114,7 @@ export default function MenusPage() {
 
                         <Link
                             href="/admin/login"
-                            className="group relative flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-200"
+                            className="group relative flex items-center gap-2 px-3 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200"
                             title="Acceso Administrativo"
                         >
                             <Settings2 size={18} className="group-hover:rotate-45 transition-transform duration-300" />
@@ -117,21 +124,21 @@ export default function MenusPage() {
             </header>
 
             <main className="flex-1 w-full px-4 lg:px-8 py-8 flex flex-col gap-8">
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3 text-zinc-400">
-                        <CalendarDays size={20} />
-                        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                <div className="flex flex-col gap-2 md:gap-3 xl:gap-2">
+                    <div className="flex items-center gap-3 text-[#3b6154]">
+                        <CalendarDays className="w-5 h-5 md:w-8 md:h-8 xl:w-5 xl:h-5" />
+                        <h1 className="text-2xl md:text-4xl xl:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                             Menú Semanal
                         </h1>
                     </div>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-lg xl:text-sm">
                         Selecciona o visualiza el menú disponible para esta semana.
                     </p>
                 </div>
 
-                {/* Calendar Layout: Scroll mobile, Grid desktop */}
-                <div className="flex-1 w-full pb-4">
-                    <div className="flex overflow-x-auto snap-x snap-mandatory lg:grid lg:grid-cols-6 lg:overflow-visible gap-4 lg:gap-6 h-full pb-4 scrollbar-hide">
+                {/* Calendar Layout: Scroll mobile, Center 2-card Carousel tablet, Grid desktop */}
+                <div className="flex-1 w-full pb-4 flex md:justify-center xl:block">
+                    <div className="flex overflow-x-auto w-full md:max-w-[712px] xl:max-w-none xl:grid xl:grid-cols-6 xl:overflow-visible snap-x snap-mandatory gap-4 md:gap-8 xl:gap-4 pb-4 scrollbar-hide px-4 md:px-0 xl:px-0">
                         {weekDays.map((day, idx) => {
                             const yyyy = day.getFullYear();
                             const mm = String(day.getMonth() + 1).padStart(2, '0');
@@ -139,12 +146,13 @@ export default function MenusPage() {
                             const dateStr = `${yyyy}-${mm}-${dd}`;
 
                             return (
-                                <div key={idx} className="w-[85vw] sm:w-[320px] lg:w-auto h-full shrink-0 snap-center">
+                                <div key={idx} className="w-[85vw] sm:w-[320px] md:w-[340px] xl:w-auto shrink-0 snap-center">
                                     <MenuCard
                                         date={day}
                                         menu={menus[dateStr] || null}
                                         isLoading={isLoading[dateStr] !== false}
                                         cedula={cedula}
+                                        userName={userName}
                                         onReservationSuccess={() => fetchDayMenu(day, cedula)}
                                     />
                                 </div>
