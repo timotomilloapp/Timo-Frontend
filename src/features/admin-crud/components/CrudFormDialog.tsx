@@ -166,9 +166,9 @@ export function CrudFormDialog({
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors flex items-center gap-2 disabled:opacity-50"
+                            className="px-4 py-2 text-sm font-bold text-white bg-[#3b6154] rounded-lg hover:bg-[#2b473e] transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50"
                         >
-                            {isLoading && <span className="w-4 h-4 border-2 border-white/30 border-t-white dark:border-zinc-900/30 dark:border-t-zinc-900 rounded-full animate-spin" />}
+                            {isLoading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                             {isEdit ? 'Guardar Cambios' : 'Crear'}
                         </button>
                     </div>

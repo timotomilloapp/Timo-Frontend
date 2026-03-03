@@ -114,7 +114,7 @@ export function ReservationCalendarCard({
                         isPastDate ? "cursor-default opacity-80" : "cursor-pointer",
                         isServed
                             ? "bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-300 dark:border-zinc-700"
-                            : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/20"
+                            : "bg-[#3b6154]/10 hover:bg-[#3b6154]/20 text-[#3b6154] border-[#3b6154]/20 dark:bg-[#3b6154]/20 dark:hover:bg-[#3b6154]/30 dark:text-[#528775] dark:border-[#3b6154]/30"
                     )}
                 >
                     <div className="font-semibold truncate">

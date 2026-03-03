@@ -138,7 +138,7 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
                 <div className="p-4 space-y-6 overflow-y-auto flex-1">
                     {sections.map((section, idx) => (
                         <div key={idx}>
-                            <h4 className="px-3 mb-2 text-xs font-semibold uppercase tracking-widest text-zinc-500">
+                            <h4 className="px-3 mb-2 text-xs font-semibold uppercase tracking-widest text-[#3b6154] dark:text-[#528775]">
                                 {section.title}
                             </h4>
                             <nav className="space-y-1">
@@ -147,13 +147,15 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
                                         key={item.href}
                                         href={item.href}
                                         className={cn(
-                                            "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                                            "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors group",
                                             item.isActive
-                                                ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white"
-                                                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800"
+                                                ? "bg-[#3b6154] text-white shadow-sm"
+                                                : "text-zinc-600 hover:text-[#3b6154] hover:bg-[#3b6154]/10 dark:text-zinc-400 dark:hover:text-[#528775] dark:hover:bg-[#3b6154]/20"
                                         )}
                                     >
-                                        {item.icon}
+                                        <div className={cn("transition-colors", item.isActive ? "text-white" : "text-[#3b6154] dark:text-[#528775]")}>
+                                            {item.icon}
+                                        </div>
                                         {item.title}
                                     </Link>
                                 ))}

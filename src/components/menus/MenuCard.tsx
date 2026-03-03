@@ -10,13 +10,14 @@ interface MenuCardProps {
     menu: Menu | null;
     isLoading: boolean;
     cedula: string;
+    userName?: string;
     onReservationSuccess: () => void;
 }
 
 const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
-export function MenuCard({ date, menu, isLoading, cedula, onReservationSuccess }: MenuCardProps) {
+export function MenuCard({ date, menu, isLoading, cedula, userName, onReservationSuccess }: MenuCardProps) {
     const [selectedProteinId, setSelectedProteinId] = useState<string | null>(null);
     const [isReserving, setIsReserving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -107,6 +108,7 @@ export function MenuCard({ date, menu, isLoading, cedula, onReservationSuccess }
                 });
             }
             onReservationSuccess();
+            setShowTicket(true);
         } catch (error: any) {
             const apiMessage = error.response?.data?.message;
             const errorMessage = apiMessage || (isEditing ? 'No se pudo actualizar la reserva.' : 'No se pudo completar la reserva.');
@@ -188,13 +190,17 @@ export function MenuCard({ date, menu, isLoading, cedula, onReservationSuccess }
                 
                 <div class="my-4 border-b">
                     <div class="flex-between my-2">
-                        <span class="label">EMPLEADO:</span>
+                        <span class="label">NOMBRE:</span>
+                        <span class="value" style="text-align: right; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${userName || 'No especificado'}</span>
+                    </div>
+                    <div class="flex-between my-2">
+                        <span class="label">C.C:</span>
                         <span class="value">${cedula}</span>
                     </div>
                 </div>
 
                 <div class="my-4 border-b">
-                    <div class="label text-center mb-1">PLATO PRINCIPAL</div>
+                    <div class="label text-center mb-1">PROTEÍNA SELECCIONADA</div>
                     <div class="value text-md text-center uppercase my-2">${proteinName}</div>
                 </div>
 
@@ -223,61 +229,61 @@ export function MenuCard({ date, menu, isLoading, cedula, onReservationSuccess }
 
     return (
         <div className="flex flex-col w-full h-full pb-4">
-            <Card className={`h-[480px] sm:h-[500px] flex flex-col w-full min-w-0 overflow-hidden border-zinc-200 dark:border-zinc-800 shadow-sm transition-all duration-200 ${isServed ? 'bg-zinc-50 dark:bg-zinc-950 opacity-70 grayscale-[0.2]' : 'bg-white dark:bg-zinc-900 ' + (showReservedState ? 'border-zinc-300 dark:border-zinc-700' : 'hover:shadow-md')}`}>
-                <CardHeader className={`pb-1 pt-4 border-b border-zinc-100 dark:border-zinc-800 flex flex-row !items-center justify-between gap-2 px-4 !grid-none !auto-rows-auto min-h-[62px] ${showReservedState ? 'bg-zinc-100 dark:bg-zinc-800/80' : 'bg-zinc-50 dark:bg-zinc-900/50'}`}>
+            <Card className={`h-[480px] sm:h-[500px] md:h-[580px] xl:h-[500px] flex flex-col w-full min-w-0 overflow-hidden border-zinc-200 dark:border-zinc-800 transition-all duration-300 ${isServed ? 'bg-zinc-50 dark:bg-zinc-950 opacity-70 grayscale-[0.2]' : 'bg-white dark:bg-zinc-900 ' + (showReservedState ? 'border-[#3b6154]/60 dark:border-[#3b6154]/50 shadow-[0_0_15px_rgba(59,97,84,0.15)] dark:shadow-[0_0_15px_rgba(59,97,84,0.25)]' : 'hover:border-[#3b6154]/50 dark:hover:border-[#3b6154]/50 hover:shadow-[0_8px_25px_rgba(59,97,84,0.15)] dark:hover:shadow-[0_8px_25px_rgba(59,97,84,0.25)]')}`}>
+                <CardHeader className={`pb-1 pt-4 border-b border-[#3b6154] dark:border-[#3b6154] flex flex-row !items-center justify-between gap-2 px-4 !grid-none !auto-rows-auto min-h-[62px] text-white bg-[#3b6154]`}>
                     <div className="flex flex-col justify-center flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                            <CardTitle className={`text-lg font-bold tracking-tight leading-none truncate ${isServed ? 'text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                            <CardTitle className={`text-lg font-bold tracking-tight leading-none truncate text-white`}>
                                 {dayName}
                             </CardTitle>
                             {showReservedState && (
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full shrink-0">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#d8efe3] bg-[#274037] px-2 py-0.5 rounded-full shrink-0">
                                     Reservaste
                                 </span>
                             )}
                             {isServed && (
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 bg-zinc-200/50 dark:bg-zinc-800/50 px-2 py-0.5 rounded-full shrink-0">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 bg-white/70 px-2 py-0.5 rounded-full shrink-0">
                                     Servido
                                 </span>
                             )}
                             {isEditing && (
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/50 px-2 py-0.5 rounded-full shrink-0">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#3b6154] bg-white px-2 py-0.5 rounded-full shrink-0">
                                     Editando
                                 </span>
                             )}
                         </div>
-                        <CardDescription className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mt-1 truncate">
+                        <CardDescription className="text-[10px] font-bold uppercase tracking-wider text-white/70 mt-1 truncate">
                             {dateString}
                         </CardDescription>
                     </div>
 
                     <div className="flex items-center justify-end gap-2 shrink-0">
                         {showReservedState && (
-                            <div className="flex bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-md overflow-hidden disabled:opacity-50">
+                            <div className="flex bg-white/10 border border-white/20 rounded-md overflow-hidden disabled:opacity-50">
                                 <button
                                     onClick={() => setShowTicket(true)}
                                     disabled={isDeleting}
-                                    className="p-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                    className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 transition-colors"
                                     title="Ver ticket de reserva"
                                 >
                                     <ReceiptText size={14} />
                                 </button>
                                 {isTomorrowOrLater && (
                                     <>
-                                        <div className="w-px bg-zinc-200 dark:bg-zinc-700"></div>
+                                        <div className="w-px bg-white/20"></div>
                                         <button
                                             onClick={() => setIsEditing(true)}
                                             disabled={isDeleting}
-                                            className="p-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                            className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 transition-colors"
                                             title="Editar reserva"
                                         >
                                             <Pencil size={14} />
                                         </button>
-                                        <div className="w-px bg-zinc-200 dark:bg-zinc-700"></div>
+                                        <div className="w-px bg-white/20"></div>
                                         <button
                                             onClick={() => setShowDeleteConfirm(true)}
                                             disabled={isDeleting}
-                                            className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
+                                            className="p-1.5 text-white/80 hover:text-red-400 hover:bg-red-500/20 transition-colors"
                                             title="Eliminar reserva"
                                         >
                                             {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
@@ -322,11 +328,11 @@ export function MenuCard({ date, menu, isLoading, cedula, onReservationSuccess }
 
                                     if (showReservedState && isSelected) {
                                         // Highlight para la proteína reservada
-                                        buttonClass = 'border-emerald-500/50 dark:border-emerald-500/50 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 shadow-sm px-3';
+                                        buttonClass = 'border-[#3b6154]/50 bg-[#3b6154]/80 dark:bg-[#3b6154]/80 text-white font-bold shadow-sm px-3';
                                     } else if (!isLocked) {
                                         // Modos interactivos
                                         if (isSelected) {
-                                            buttonClass = 'border-zinc-900 dark:border-white bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-sm px-3';
+                                            buttonClass = 'border-[#3b6154]/80 bg-[#3b6154]/90 dark:bg-[#3b6154]/80 text-white font-bold shadow-sm px-3';
                                         } else {
                                             buttonClass = 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-700 dark:text-zinc-300 px-3';
                                         }
@@ -450,25 +456,35 @@ export function MenuCard({ date, menu, isLoading, cedula, onReservationSuccess }
 
             {/* Modal de Ticket POS */}
             {showTicket && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-[2px] flex-col">
-                    <div className="w-64 p-0 shadow-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg animate-in fade-in zoom-in-95 duration-200 flex flex-col overflow-hidden">
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-[2px] flex-col"
+                    onClick={() => setShowTicket(false)}
+                >
+                    <div
+                        className="w-72 md:w-80 p-0 shadow-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg animate-in fade-in zoom-in-95 duration-200 flex flex-col overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
 
                         {/* Ticket Content (Simulated POS) */}
-                        <div className="bg-white p-5 text-zinc-900 font-mono text-xs border-b border-zinc-200 dark:border-zinc-800 dashed border-b-2" style={{ borderBottomStyle: 'dashed' }}>
-                            <div className="text-center border-b border-zinc-300 pb-3 mb-3" style={{ borderBottomStyle: 'dashed' }}>
-                                <div className="font-extrabold text-2xl tracking-tighter font-sans mb-1">TIMO.</div>
-                                <div className="font-bold text-[10px] uppercase">Reserva de Almuerzo</div>
-                                <div className="text-[10px] mt-1">{dateString}</div>
+                        <div className="bg-white p-6 text-zinc-900 font-mono text-sm border-b border-zinc-200 dark:border-zinc-800 dashed border-b-2" style={{ borderBottomStyle: 'dashed' }}>
+                            <div className="text-center border-b border-zinc-300 pb-4 mb-4" style={{ borderBottomStyle: 'dashed' }}>
+                                <div className="font-extrabold text-3xl tracking-tighter font-sans mb-1">TIMO.</div>
+                                <div className="font-bold text-xs uppercase">Reserva de Almuerzo</div>
+                                <div className="text-xs mt-1">{dateString}</div>
                             </div>
 
+                            <div className="flex justify-between items-center py-1 gap-2">
+                                <span className="text-zinc-500">Nombre:</span>
+                                <span className="font-bold text-right truncate overflow-hidden max-w-[160px]" title={userName || 'No especificado'}>{userName || 'No especificado'}</span>
+                            </div>
                             <div className="flex justify-between items-center py-1">
                                 <span className="text-zinc-500">C.C:</span>
                                 <span className="font-bold">{cedula}</span>
                             </div>
 
-                            <div className="mt-3 border-t border-zinc-300 pt-3 flex flex-col items-center" style={{ borderTopStyle: 'dashed' }}>
-                                <span className="text-[10px] text-zinc-500 mb-1">PLATO PRINCIPAL</span>
-                                <span className="font-bold text-sm uppercase text-center">
+                            <div className="mt-4 border-t border-zinc-300 pt-4 flex flex-col items-center" style={{ borderTopStyle: 'dashed' }}>
+                                <span className="text-xs text-zinc-500 mb-1">PROTEÍNA SELECCIONADA</span>
+                                <span className="font-bold text-base uppercase text-center">
                                     {allProteinsRaw.find(p => p?.id === selectedProteinId)?.name || 'Sin especificar'}
                                 </span>
                             </div>
@@ -477,7 +493,7 @@ export function MenuCard({ date, menu, isLoading, cedula, onReservationSuccess }
                         {/* Modal Actions */}
                         <div className="flex flex-col gap-2 p-3 bg-zinc-50 dark:bg-zinc-900">
                             <Button
-                                className="w-full text-xs font-bold uppercase tracking-wider bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 border-none shadow-sm flex gap-2 items-center"
+                                className="w-full text-xs font-bold uppercase tracking-wider bg-[#3b6154] hover:bg-zinc-200 text-white hover:text-zinc-900 border-none shadow-sm flex gap-2 items-center transition-colors duration-300"
                                 onClick={handlePrintTicket}
                             >
                                 <ReceiptText size={14} /> Imprimir Ticket

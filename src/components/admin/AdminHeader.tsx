@@ -23,26 +23,26 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
     }, []);
 
     return (
-        <header className="fixed top-0 left-0 right-0 h-16 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md z-50">
+        <header className="fixed top-0 left-0 right-0 h-16 border-b border-[#3b6154] dark:border-[#3b6154] bg-[#3b6154] z-50">
             <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
 
                 {/* Brand */}
                 <div className="flex items-center gap-3 w-auto md:w-60">
-                    <button onClick={onMenuToggle} className="md:hidden p-1.5 -ml-1.5 mr-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 rounded-md">
+                    <button onClick={onMenuToggle} className="md:hidden p-1.5 -ml-1.5 mr-1 text-white/70 hover:text-white rounded-md">
                         <Menu size={20} />
                     </button>
-                    <UtensilsCrossed size={16} className="text-zinc-500 dark:text-zinc-400 hidden sm:block" />
-                    <span className="font-black tracking-tighter text-2xl text-zinc-900 dark:text-white leading-none">TIMO.</span>
-                    <span className="text-zinc-500 text-xs hidden sm:block">/ Admin</span>
+                    <UtensilsCrossed size={16} className="text-white/80 hidden sm:block" />
+                    <span className="font-black tracking-tighter text-2xl text-white leading-none">TIMO.</span>
+                    <span className="text-white/60 text-xs hidden sm:block">/ Admin</span>
                 </div>
 
                 {/* Right side actions */}
                 <div className="flex items-center gap-3">
                     {profile && (
-                        <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-400 mr-2">
-                            <span className="text-zinc-600 dark:text-zinc-400">{profile.email}</span>
-                            <span className="text-zinc-700 dark:text-zinc-600">·</span>
-                            <span className="font-bold text-zinc-900 dark:text-zinc-300 uppercase tracking-widest">{profile.role}</span>
+                        <div className="hidden sm:flex items-center gap-2 text-xs text-white/70 mr-2">
+                            <span className="text-white/90">{profile.email}</span>
+                            <span className="text-white/50">·</span>
+                            <span className="font-bold text-white uppercase tracking-widest">{profile.role}</span>
                         </div>
                     )}
 
@@ -51,7 +51,7 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
                     <button
                         onClick={() => authService.logout().then(() => router.replace('/admin/login'))}
                         title="Cerrar sesión"
-                        className="w-9 h-9 rounded-full flex items-center justify-center text-zinc-500 hover:text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
+                        className="w-9 h-9 rounded-full flex items-center justify-center text-white/80 hover:text-red-400 hover:bg-white/10 transition-all"
                     >
                         <LogOut size={16} />
                     </button>

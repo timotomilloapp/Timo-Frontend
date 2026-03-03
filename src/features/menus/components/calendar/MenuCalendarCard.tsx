@@ -71,7 +71,7 @@ export function MenuCalendarCard({
         <div className={cn(
             "group relative h-full min-h-[100px] w-full p-2 flex flex-col gap-1 transition-colors border",
             isCurrentMonth ? "bg-white dark:bg-zinc-950" : "opacity-60 bg-zinc-50 dark:bg-zinc-900/20",
-            isServed ? "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/10" : "border-emerald-500/30 dark:border-emerald-500/20 shadow-sm shadow-emerald-500/5"
+            isServed ? "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/10" : "border-[#3b6154]/30 dark:border-[#3b6154]/20 shadow-sm shadow-[#3b6154]/5"
         )}>
             <div className="flex items-center justify-between">
                 <span className={cn(
@@ -135,7 +135,7 @@ export function MenuCalendarCard({
                     "w-full text-xs p-1.5 rounded cursor-pointer transition-colors border flex items-center h-[34px]",
                     isServed
                         ? "bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-300 dark:border-zinc-700"
-                        : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/20"
+                        : "bg-[#3b6154]/10 hover:bg-[#3b6154]/20 text-[#3b6154] border-[#3b6154]/20 dark:bg-[#3b6154]/20 dark:hover:bg-[#3b6154]/30 dark:text-[#528775] dark:border-[#3b6154]/30"
                 )}>
                     <div className="font-semibold truncate">
                         {isServed ? 'Servido' : 'Programado'}

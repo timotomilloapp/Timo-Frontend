@@ -40,11 +40,11 @@ export default function Home() {
     <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-200">
 
       {/* Header */}
-      <header className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-950 dark:bg-zinc-900">
+      <header className="bg-[#3b6154]">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Brand */}
           <div className="flex items-center gap-3">
-            <UtensilsCrossed size={16} className="text-zinc-500" />
+            <UtensilsCrossed size={16} className="text-white" />
             <span className="font-black tracking-tighter text-2xl text-white leading-none">
               TIMO.
             </span>
@@ -55,7 +55,7 @@ export default function Home() {
             <ThemeToggle />
             <Link
               href="/admin/login"
-              className="group relative flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all duration-200"
+              className="group relative flex items-center gap-2 px-3 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200"
               title="Acceso Administrativo"
             >
               <Settings2 size={18} className="group-hover:rotate-45 transition-transform duration-300" />
@@ -65,15 +65,15 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-12 lg:py-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center min-h-[calc(100vh-4rem-3rem)]">
+      <main className="max-w-7xl mx-auto px-6 py-12 xl:py-24 grid grid-cols-1 xl:grid-cols-2 gap-16 items-center min-h-[calc(100vh-4rem-3rem)]">
 
         {/* Left Column: Cédula Login */}
-        <section className="space-y-10 order-2 lg:order-1">
-          <div className="max-w-sm space-y-6">
+        <section className="space-y-10 flex flex-col items-center xl:items-start text-center xl:text-left w-full">
+          <div className="w-full max-w-sm md:max-w-md xl:max-w-sm space-y-6 md:space-y-8 xl:space-y-6">
 
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tight">Haz tu pedido</h2>
-              <p className="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed">
+            <div className="space-y-2 md:space-y-4 xl:space-y-2">
+              <h2 className="text-3xl md:text-5xl xl:text-3xl font-bold tracking-tight">Haz tu pedido</h2>
+              <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-lg xl:text-sm leading-relaxed">
                 Ingresa tu número de cédula para consultar el menú del día y realizar tu reserva.
               </p>
             </div>
@@ -91,7 +91,7 @@ export default function Home() {
                 inputMode="numeric"
                 pattern="[0-9]*"
                 disabled={isLoading}
-                className={error ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                className={`md:h-16 md:text-2xl xl:h-10 xl:text-sm ${error ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
               />
 
               {error && (
@@ -101,7 +101,7 @@ export default function Home() {
                 </div>
               )}
 
-              <Button type="submit" disabled={isLoading} className="w-full group dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200">
+              <Button type="submit" disabled={isLoading} className="w-full group bg-[#3b6154] text-white hover:bg-zinc-200 hover:text-zinc-900 border-none transition-colors duration-300 md:h-16 md:text-xl xl:h-10 xl:text-sm">
                 {isLoading ? (
                   <>
                     <Loader2 size={16} className="mr-2 animate-spin" />
@@ -119,15 +119,15 @@ export default function Home() {
         </section>
 
         {/* Right Column: Brand block */}
-        <section className="space-y-6 order-1 lg:order-2 lg:border-l lg:border-zinc-100 dark:lg:border-zinc-800 lg:pl-16 py-8">
-          <h1 className="text-5xl lg:text-7xl font-black leading-[1.05] tracking-tighter">
-            TIMO.
+        <section className="space-y-6 md:space-y-8 xl:space-y-6 xl:border-l xl:border-zinc-100 dark:xl:border-zinc-800 xl:pl-16 py-8 flex flex-col items-center xl:items-start text-center xl:text-left w-full">
+          <h1 className="text-5xl md:text-[6rem] xl:text-7xl font-black leading-[1.05] tracking-tighter">
+            TIMO<span className="text-[#3b6154]">.</span>
           </h1>
-          <p className="text-base text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-md">
+          <p className="text-base md:text-xl xl:text-base text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-md md:max-w-xl mx-auto xl:mx-0">
             Almuerzos corporativos para tu equipo, sin complicaciones.
             Rápido, confiable y siempre disponible.
           </p>
-          <div className="flex flex-wrap gap-8 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex flex-wrap justify-center xl:justify-start gap-8 md:gap-12 xl:gap-8 pt-4 md:pt-6 xl:pt-4 border-t border-zinc-100 dark:border-zinc-800 w-full max-w-md md:max-w-xl xl:max-w-none">
             <FeatureItem title="Pedidos" desc="Rápidos y simples" />
             <FeatureItem title="Menú diario" desc="Actualizado cada jornada" />
             <FeatureItem title="Sin internet" desc="Disponible offline" />
@@ -149,9 +149,9 @@ export default function Home() {
 
 function FeatureItem({ title, desc }: { title: string, desc: string }) {
   return (
-    <div className="space-y-0.5">
-      <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">{title}</p>
-      <p className="text-[11px] text-zinc-400 font-medium">{desc}</p>
+    <div className="space-y-0.5 md:space-y-1.5 xl:space-y-0.5">
+      <p className="text-xs md:text-base xl:text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">{title}</p>
+      <p className="text-[11px] md:text-sm xl:text-[11px] text-zinc-400 font-medium">{desc}</p>
     </div>
   );
 }

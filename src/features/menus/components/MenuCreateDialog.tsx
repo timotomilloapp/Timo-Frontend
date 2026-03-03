@@ -180,7 +180,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                 {isEditing ? <Pencil size={20} /> : <Plus size={20} />}
                             </div>
                             <div>
-                                <h2 className="text-lg font-bold">{isEditing ? 'Editar Menú' : 'Crear Nuevo Menú'}</h2>
+                                <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{isEditing ? 'Editar Menú' : 'Crear Nuevo Menú'}</h2>
                                 <p className="text-xs text-zinc-500">{isEditing ? 'Modifica los componentes del menú' : 'Configura los componentes para la carta'}</p>
                             </div>
                         </div>
@@ -226,7 +226,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                 <div className="space-y-3">
                                     <div className="border-b border-zinc-100 dark:border-zinc-800 pb-2">
                                         <label className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-                                            Proteínas *
+                                            <span>Proteínas <span className="text-[#3b6154] dark:text-[#528775]">*</span></span>
                                             <span className="text-xs font-normal text-zinc-500">Selecciona una o más</span>
                                         </label>
                                     </div>
@@ -349,7 +349,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="px-4 sm:px-6 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 rounded-lg transition-colors flex items-center gap-2"
+                                    className="px-4 sm:px-6 py-2 text-sm font-bold bg-[#3b6154] hover:bg-[#2b473e] text-white rounded-lg transition-colors flex items-center gap-2 shadow-sm"
                                 >
                                     {isLoading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                                     {isEditing ? 'Guardar Cambios' : 'Crear Menú'}
