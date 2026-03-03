@@ -71,11 +71,11 @@ export const authService = {
         return await get<string>(REFRESH_KEY);
     },
 
-    async logout() {
+    async logout(redirectUrl: string = '/admin/login') {
         await del(TOKEN_KEY);
         await del(REFRESH_KEY);
-        if (typeof window !== 'undefined') {
-            window.location.href = '/admin/login';
+        if (typeof window !== 'undefined' && redirectUrl) {
+            window.location.href = redirectUrl;
         }
     },
 

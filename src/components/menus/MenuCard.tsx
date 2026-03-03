@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Coffee, Drumstick, Salad, Check, Loader2, Pencil, Trash2, ReceiptText, X } from 'lucide-react';
 import { reservationService } from '@/services/reservation-service';
+import { authService } from '@/services/auth-service';
 
 interface MenuCardProps {
     date: Date;
@@ -225,6 +226,11 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
 
         printWindow.document.write(ticketHtml);
         printWindow.document.close();
+
+        // Cierra sesión y redirige tras imprimir el ticket para agilizar el proceso
+        setTimeout(() => {
+            authService.logout('/');
+        }, 1000);
     };
 
     return (
