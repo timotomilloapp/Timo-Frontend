@@ -166,7 +166,7 @@ export function UserCreateDialog({ isOpen, onClose }: UserCreateDialogProps) {
                         <button
                             type="submit"
                             disabled={createMut.isPending}
-                            className="px-4 py-2 text-sm font-medium text-white dark:text-zinc-900 bg-zinc-900 dark:bg-white rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors flex items-center gap-2"
+                            className="px-4 py-2 text-sm font-bold text-white bg-[#3b6154] rounded-lg hover:bg-[#2b473e] transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50"
                         >
                             {createMut.isPending ? (
                                 <>

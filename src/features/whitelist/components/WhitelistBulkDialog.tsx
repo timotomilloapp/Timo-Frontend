@@ -92,7 +92,7 @@ export function WhitelistBulkDialog({ isOpen, onClose, onUpload, isLoading }: Wh
 
                             <button
                                 onClick={onClose}
-                                className="mt-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors"
+                                className="mt-2 px-4 py-2 text-sm font-bold text-white bg-[#3b6154] hover:bg-[#2b473e] rounded-lg shadow-sm transition-colors"
                             >
                                 Cerrar
                             </button>
@@ -130,7 +130,7 @@ export function WhitelistBulkDialog({ isOpen, onClose, onUpload, isLoading }: Wh
                                 <button
                                     onClick={handleUpload}
                                     disabled={!file || isLoading}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 text-sm font-bold text-white bg-[#3b6154] hover:bg-[#2b473e] rounded-lg shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50"
                                 >
                                     {isLoading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <FileUp size={16} />}
                                     Subir Archivo

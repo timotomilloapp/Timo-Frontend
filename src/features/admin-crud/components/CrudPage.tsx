@@ -119,13 +119,13 @@ export function CrudPage({ config }: CrudPageProps) {
                     <h1 className="text-3xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50">
                         {config.title}
                     </h1>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                    <p className="text-sm text-[#3b6154] dark:text-[#528775] mt-1 font-medium">
                         Gestiona los registros de {config.title.toLowerCase()} en el sistema.
                     </p>
                 </div>
                 <button
                     onClick={handleOpenCreate}
-                    className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#3b6154] hover:bg-[#2b473e] text-white rounded-lg text-sm font-bold shadow-sm transition-colors"
                 >
                     <Plus size={16} />
                     Crear {config.singularTitle}

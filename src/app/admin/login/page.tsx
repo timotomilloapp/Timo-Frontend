@@ -53,19 +53,19 @@ export default function AdminLoginPage() {
                 <ThemeToggle />
             </div>
 
-            <div className="w-full max-w-sm space-y-8 pt-8">
-                <div className="flex flex-col items-center space-y-3">
-                    <div className="bg-[#3b6154] border border-[#3b6154]/50 p-3.5 rounded-2xl shadow-xl text-white">
-                        <UtensilsCrossed size={28} />
+            <div className="w-full max-w-sm md:max-w-md space-y-8 md:space-y-10 pt-8 md:pt-16">
+                <div className="flex flex-col items-center space-y-3 md:space-y-5">
+                    <div className="bg-[#3b6154] border border-[#3b6154]/50 p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-xl text-white">
+                        <UtensilsCrossed size={28} className="md:w-10 md:h-10" />
                     </div>
                     <div className="text-center">
-                        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Panel TIMO</h1>
-                        <p className="text-zinc-400 dark:text-zinc-500 text-sm mt-1">Acceso exclusivo para administradores</p>
+                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Panel TIMO</h1>
+                        <p className="text-zinc-400 dark:text-zinc-500 text-sm md:text-base mt-1 md:mt-2">Acceso exclusivo para administradores</p>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl shadow-zinc-100 dark:shadow-zinc-950">
-                    <form onSubmit={handleLogin} className="space-y-5">
+                <div className="bg-white dark:bg-zinc-900 p-8 md:p-10 rounded-3xl md:rounded-[2rem] border border-zinc-200 dark:border-zinc-800 shadow-xl shadow-zinc-100 dark:shadow-zinc-950">
+                    <form onSubmit={handleLogin} className="space-y-5 md:space-y-7">
 
                         {error && (
                             <div className="p-3.5 bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 rounded-xl flex gap-3 animate-in fade-in slide-in-from-top-2">
@@ -76,7 +76,8 @@ export default function AdminLoginPage() {
 
                         <Input
                             label="Correo electrónico"
-                            labelClassName="text-zinc-900 dark:text-white"
+                            labelClassName="text-zinc-900 dark:text-white md:text-base md:mb-2"
+                            className="md:h-14 md:text-lg"
                             placeholder="admin@empresa.com"
                             type="email"
                             value={email}
@@ -85,7 +86,8 @@ export default function AdminLoginPage() {
                         />
                         <Input
                             label="Contraseña"
-                            labelClassName="text-zinc-900 dark:text-white"
+                            labelClassName="text-zinc-900 dark:text-white md:text-base md:mb-2"
+                            className="md:h-14 md:text-lg"
                             placeholder="••••••••"
                             type="password"
                             value={password}
@@ -95,7 +97,7 @@ export default function AdminLoginPage() {
 
                         <Button
                             type="submit"
-                            className="w-full h-12 text-base mt-2 bg-[#3b6154] hover:bg-[#2b473e] text-white border-none shadow-md transition-colors"
+                            className="w-full h-12 md:h-14 text-base md:text-lg font-bold tracking-wide mt-2 md:mt-4 bg-[#3b6154] hover:bg-[#2b473e] text-white border-none shadow-md transition-colors"
                             disabled={isLoading}
                         >
                             {isLoading ? (
@@ -110,7 +112,7 @@ export default function AdminLoginPage() {
                     </form>
                 </div>
 
-                <p className="text-center text-[10px] text-zinc-400 font-medium uppercase tracking-[0.2em]">
+                <p className="text-center text-[10px] md:text-xs text-zinc-400 font-medium uppercase tracking-[0.2em] md:tracking-[0.25em]">
                     Uso restringido · Personal autorizado
                 </p>
             </div>
