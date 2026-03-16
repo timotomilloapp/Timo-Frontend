@@ -57,6 +57,8 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
                     icon: <Beef size={18} />,
                     isActive: pathname.startsWith('/admin/menu-items/proteins')
                 },
+                /* 
+                // Módulos desactivados visualmente por petición del usuario
                 {
                     title: 'Acompañamientos',
                     href: '/admin/menu-items/side-dishes',
@@ -75,7 +77,8 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
                     icon: <Wine size={18} />,
                     isActive: pathname.startsWith('/admin/menu-items/drinks')
                 }
-            ]
+                */
+            ].filter(Boolean) as NavItem[]
         },
         {
             title: 'Operaciones',
