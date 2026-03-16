@@ -184,7 +184,7 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
             </head>
             <body>
                 <div class="text-center">
-                    <div class="font-bold text-xl tracking-tighter my-2 border-b" style="font-family: sans-serif; letter-spacing: -1px;">TIMO.</div>
+                    <div class="font-bold text-xl tracking-tighter my-2 border-b" style="font-family: sans-serif; letter-spacing: -1px; color: #3b6154;">TIMO<span style="color: #061210;">TOMILLO</span></div>
                     <div class="font-bold my-2">RESERVA DE ALMUERZO</div>
                     <div class="text-sm my-2">${dateString}</div>
                 </div>
@@ -302,7 +302,7 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                 </CardHeader>
 
                 <CardContent className="flex-1 p-0 flex flex-col divide-y divide-zinc-100 dark:divide-zinc-800 overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {/* Bebida Block */}
+                    {/* Bebida Block - Desactivado visualmente
                     <div className={`p-4 flex flex-col gap-2 transition-colors ${!isLocked && 'group hover:bg-zinc-50 dark:hover:bg-zinc-800/50'}`}>
                         <div className="flex items-center gap-2 text-zinc-400 dark:text-zinc-500 mb-1">
                             <Coffee size={14} />
@@ -312,6 +312,7 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                             {drink ? drink.name : 'No especificada'}
                         </p>
                     </div>
+                    */}
 
                     {/* Proteína Block */}
                     <div className={`p-4 flex flex-col gap-2 transition-colors ${!isLocked && 'group hover:bg-zinc-50 dark:hover:bg-zinc-800/50'}`}>
@@ -367,7 +368,7 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                         )}
                     </div>
 
-                    {/* SideDishes Block */}
+                    {/* SideDishes Block - Desactivado visualmente
                     <div className={`p-4 flex flex-col gap-2 transition-colors ${!isLocked && 'group hover:bg-zinc-50 dark:hover:bg-zinc-800/50'}`}>
                         <div className="flex items-center gap-2 text-zinc-400 dark:text-zinc-500 mb-1">
                             <Salad size={14} />
@@ -386,6 +387,7 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                             <p className="text-sm font-medium text-zinc-500 italic">No especificados</p>
                         )}
                     </div>
+                    */}
                 </CardContent>
             </Card>
 
@@ -474,7 +476,7 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                         {/* Ticket Content (Simulated POS) */}
                         <div className="bg-white p-6 text-zinc-900 font-mono text-sm border-b border-zinc-200 dark:border-zinc-800 dashed border-b-2" style={{ borderBottomStyle: 'dashed' }}>
                             <div className="text-center border-b border-zinc-300 pb-4 mb-4" style={{ borderBottomStyle: 'dashed' }}>
-                                <div className="font-extrabold text-3xl tracking-tighter font-sans mb-1">TIMO.</div>
+                                <div className="font-extrabold text-3xl tracking-tighter font-sans mb-1 text-[#3b6154]">TIMO<span style={{ color: '#061210' }}>TOMILLO</span></div>
                                 <div className="font-bold text-xs uppercase">Reserva de Almuerzo</div>
                                 <div className="text-xs mt-1">{dateString}</div>
                             </div>
