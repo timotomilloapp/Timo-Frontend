@@ -80,7 +80,7 @@ export function ProteinSummaryTicketModal({ date, onClose }: ProteinSummaryTicke
                             {/* Footer */}
                             <div className="mt-8 pt-6 border-t border-dashed border-zinc-300 text-center text-xs text-zinc-500 space-y-1">
                                 <p>Totales calculados automáticamente.</p>
-                                <p>TIMO Platform © {new Date().getFullYear()}</p>
+                                <p>TIMOTOMILLO Platform © {new Date().getFullYear()}</p>
                             </div>
                         </div>
                     ) : (

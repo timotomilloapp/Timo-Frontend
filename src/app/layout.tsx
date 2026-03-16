@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TIMO — Almuerzos Corporativos",
+  title: "TIMOTOMILLO — Almuerzos Corporativos",
   description: "Gestiona los almuerzos de tu equipo de forma simple y rápida.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "TIMO",
+    title: "TIMOTOMILLO",
   },
 };
 
