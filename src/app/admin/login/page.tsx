@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
                     className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors group"
                 >
                     <UtensilsCrossed size={16} className="text-zinc-500" />
-                    <span className="font-black tracking-tighter text-2xl text-white leading-none">TIMO.</span>
+                    <span className="font-black tracking-tighter text-2xl text-white leading-none">TIMO<span className="text-[#061210]">TOMILLO</span></span>
                 </Link>
                 <ThemeToggle />
             </div>
@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
                         <UtensilsCrossed size={28} className="md:w-10 md:h-10" />
                     </div>
                     <div className="text-center">
-                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Panel TIMO</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Panel TIMOTOMILLO</h1>
                         <p className="text-zinc-400 dark:text-zinc-500 text-sm md:text-base mt-1 md:mt-2">Acceso exclusivo para administradores</p>
                     </div>
                 </div>

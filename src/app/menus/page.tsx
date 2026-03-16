@@ -92,7 +92,7 @@ export default function MenusPage() {
                     <div className="flex items-center gap-3">
                         <UtensilsCrossed size={16} className="text-white" />
                         <span className="font-black tracking-tighter text-2xl text-white leading-none">
-                            TIMO.
+                            TIMO<span className="text-[#061210]">TOMILLO</span>
                         </span>
                     </div>
 

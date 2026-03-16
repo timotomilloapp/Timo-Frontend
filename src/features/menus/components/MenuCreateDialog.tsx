@@ -266,7 +266,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                     {activeProteins.length === 0 && <p className="text-sm text-zinc-400 italic">No hay proteínas activas creadas.</p>}
                                 </div>
 
-                                {/* Sides */}
+                                {/* Sides - Desactivado visualmente
                                 <div className="space-y-3">
                                     <div className="border-b border-zinc-100 dark:border-zinc-800 pb-2">
                                         <label className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
@@ -288,8 +288,9 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                         })}
                                     </div>
                                 </div>
+                                */}
 
-                                {/* Soups */}
+                                {/* Soups - Desactivado visualmente
                                 <div className="space-y-3">
                                     <div className="border-b border-zinc-100 dark:border-zinc-800 pb-2">
                                         <label className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
@@ -311,8 +312,9 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                         })}
                                     </div>
                                 </div>
+                                */}
 
-                                {/* Drinks */}
+                                {/* Drinks - Desactivado visualmente
                                 <div className="space-y-3">
                                     <div className="border-b border-zinc-100 dark:border-zinc-800 pb-2">
                                         <label className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
@@ -334,6 +336,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                         })}
                                     </div>
                                 </div>
+                                */}
 
                             </div>
 

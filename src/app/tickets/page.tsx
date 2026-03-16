@@ -170,7 +170,7 @@ export default function TicketsGeneratorPage() {
                                 {/* Ticket Content */}
                                 <div className="p-6 text-zinc-900 w-full" style={{ padding: '24px 16px' }}>
                                     <div className="text-center border-b border-zinc-300 pb-3 mb-3" style={{ borderBottomStyle: 'dashed' }}>
-                                        <div className="font-extrabold text-3xl tracking-tighter font-sans mb-1" style={{ letterSpacing: '-1.5px' }}>TIMO.</div>
+                                        <div className="font-extrabold text-3xl tracking-tighter font-sans mb-1" style={{ letterSpacing: '-1.5px' }}>TIMO<span className="text-[#3b6154]">TOMILLO</span></div>
                                         <div className="font-bold text-[14px] uppercase tracking-wider">RESERVA DE ALMUERZO</div>
                                         <div className="text-[14px] mt-1 text-zinc-600">{format(new Date(), "dd 'de' MMMM", { locale: es })}</div>
                                     </div>

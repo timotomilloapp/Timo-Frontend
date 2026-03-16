@@ -46,8 +46,9 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <UtensilsCrossed size={16} className="text-white" />
             <span className="font-black tracking-tighter text-2xl text-white leading-none">
-              TIMO.
+              TIMO<span className="text-[#061210]">TOMILLO</span>
             </span>
+
           </div>
 
           {/* Right Actions */}
@@ -72,7 +73,8 @@ export default function Home() {
           <div className="w-full max-w-sm md:max-w-md xl:max-w-sm space-y-6 md:space-y-8 xl:space-y-6">
 
             <div className="space-y-2 md:space-y-4 xl:space-y-2">
-              <h2 className="text-3xl md:text-5xl xl:text-3xl font-bold tracking-tight">Haz tu pedido</h2>
+              <h2 className="text-3xl md:text-5xl xl:text-3xl font-bold tracking-tight">Reserva tu proteína</h2>
+
               <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-lg xl:text-sm leading-relaxed">
                 Ingresa tu número de cédula para consultar el menú del día y realizar tu reserva.
               </p>
@@ -121,7 +123,7 @@ export default function Home() {
         {/* Right Column: Brand block */}
         <section className="space-y-6 md:space-y-8 xl:space-y-6 xl:border-l xl:border-zinc-100 dark:xl:border-zinc-800 xl:pl-16 py-8 flex flex-col items-center xl:items-start text-center xl:text-left w-full">
           <h1 className="text-5xl md:text-[6rem] xl:text-7xl font-black leading-[1.05] tracking-tighter">
-            TIMO<span className="text-[#3b6154]">.</span>
+            TIMO<span className="text-[#3b6154]">TOMILLO</span>
           </h1>
           <p className="text-base md:text-xl xl:text-base text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-md md:max-w-xl mx-auto xl:mx-0">
             Almuerzos corporativos para tu equipo, sin complicaciones.
@@ -139,7 +141,8 @@ export default function Home() {
       <footer className="fixed bottom-0 w-full border-t border-zinc-100 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-center">
           <p className="text-[10px] text-zinc-400 font-medium uppercase tracking-[0.2em]">
-            © 2026 TIMO — Gestión de Almuerzos Corporativos
+            © 2026 TIMOTOMILLO — Gestión de Almuerzos Corporativos
+
           </p>
         </div>
       </footer>

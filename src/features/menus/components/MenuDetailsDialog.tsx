@@ -29,7 +29,7 @@ export function MenuDetailsDialog({ menu, onClose }: MenuDetailsDialogProps) {
 
                 <ScrollArea className="flex-1 overflow-y-auto p-6">
                     <div className="space-y-6">
-                        {/* Principales (Sopa y Jugo) */}
+                        {/* Principales (Sopa y Jugo) - Desactivado visualmente
                         <div className="space-y-3">
                             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 border-b border-zinc-100 dark:border-zinc-800 pb-2">
                                 Principales
@@ -45,6 +45,7 @@ export function MenuDetailsDialog({ menu, onClose }: MenuDetailsDialogProps) {
                                 </div>
                             </div>
                         </div>
+                        */}
 
                         {/* Opciones de Proteína */}
                         <div className="space-y-3">
@@ -68,7 +69,7 @@ export function MenuDetailsDialog({ menu, onClose }: MenuDetailsDialogProps) {
                             )}
                         </div>
 
-                        {/* Opciones de Acompañante */}
+                        {/* Opciones de Acompañante - Desactivado visualmente
                         <div className="space-y-3">
                             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 border-b border-zinc-100 dark:border-zinc-800 pb-2">
                                 Opciones de Acompañante
@@ -85,6 +86,7 @@ export function MenuDetailsDialog({ menu, onClose }: MenuDetailsDialogProps) {
                                 <p className="text-sm text-zinc-500">No hay acompañantes asignados.</p>
                             )}
                         </div>
+                        */}
                     </div>
                 </ScrollArea>
             </DialogContent>

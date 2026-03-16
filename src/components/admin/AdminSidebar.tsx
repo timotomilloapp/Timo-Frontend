@@ -57,6 +57,8 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
                     icon: <Beef size={18} />,
                     isActive: pathname.startsWith('/admin/menu-items/proteins')
                 },
+                /* 
+                // Módulos desactivados visualmente por petición del usuario
                 {
                     title: 'Acompañamientos',
                     href: '/admin/menu-items/side-dishes',
@@ -75,7 +77,8 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
                     icon: <Wine size={18} />,
                     isActive: pathname.startsWith('/admin/menu-items/drinks')
                 }
-            ]
+                */
+            ].filter(Boolean) as NavItem[]
         },
         {
             title: 'Operaciones',
@@ -130,7 +133,7 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="flex items-center justify-between p-4 md:hidden border-b border-zinc-200 dark:border-zinc-800">
-                    <span className="font-black tracking-tighter text-xl text-zinc-900 dark:text-white">TIMO.</span>
+                    <span className="font-black tracking-tighter text-xl text-zinc-900 dark:text-white">TIMO<span className="text-[#3b6154]">TOMILLO</span></span>
                     <button onClick={onClose} className="p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">
                         <X size={20} />
                     </button>
