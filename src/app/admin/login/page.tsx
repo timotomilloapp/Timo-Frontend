@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
                     className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors group"
                 >
                     <UtensilsCrossed size={16} className="text-zinc-500" />
-                    <span className="font-black tracking-tighter text-2xl text-white leading-none">TIMO<span className="text-emerald-200">TOMILLO</span></span>
+                    <span className="font-black tracking-tighter text-2xl text-white leading-none">TIMO<span className="text-[#061210]">TOMILLO</span></span>
                 </Link>
                 <ThemeToggle />
             </div>

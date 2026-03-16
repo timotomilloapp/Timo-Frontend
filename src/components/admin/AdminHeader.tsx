@@ -32,7 +32,7 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
                         <Menu size={20} />
                     </button>
                     <UtensilsCrossed size={16} className="text-white/80 hidden sm:block" />
-                    <span className="font-black tracking-tighter text-2xl text-white leading-none">TIMO<span className="text-emerald-200">TOMILLO</span></span>
+                    <span className="font-black tracking-tighter text-2xl text-white leading-none">TIMO<span className="text-[#061210]">TOMILLO</span></span>
                     <span className="text-white/60 text-xs hidden sm:block">/ Admin</span>
                 </div>
 

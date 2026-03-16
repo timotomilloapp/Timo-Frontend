@@ -68,7 +68,7 @@ export function CrudPage({ config }: CrudPageProps) {
                 await deleteMut.mutateAsync(item.id);
             }
             setConfirmDialog({ isOpen: false, type: null, item: null });
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error in confirm action', err);
         }
     };

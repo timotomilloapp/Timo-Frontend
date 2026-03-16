@@ -45,7 +45,9 @@ export default function Home() {
           {/* Brand */}
           <div className="flex items-center gap-3">
             <UtensilsCrossed size={16} className="text-white" />
-              TIMO<span className="text-emerald-200">TOMILLO</span>
+            <span className="font-black tracking-tighter text-2xl text-white leading-none">
+              TIMO<span className="text-[#061210]">TOMILLO</span>
+            </span>
 
           </div>
 
