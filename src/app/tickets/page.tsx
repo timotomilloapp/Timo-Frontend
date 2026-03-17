@@ -101,7 +101,7 @@ export default function TicketsGeneratorPage() {
                             <Input
                                 type="text"
                                 placeholder="Digita el documento (CC)..."
-                                className="pl-3 h-10 w-full bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-700 focus-visible:ring-zinc-900 dark:focus-visible:ring-zinc-100 transition-all font-mono"
+                                className="pl-3 h-10 w-full bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-700 focus-visible:ring-zinc-900 dark:focus-visible:ring-zinc-100 transition-all font-mono text-zinc-500 dark:text-zinc-400"
                                 value={inputValue}
                                 onChange={(e) => {
                                     setInputValue(e.target.value);

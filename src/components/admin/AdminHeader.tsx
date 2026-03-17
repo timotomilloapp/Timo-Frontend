@@ -27,13 +27,17 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
             <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
 
                 {/* Brand */}
-                <div className="flex items-center gap-3 w-auto md:w-60">
+                <div className="flex items-center gap-3">
                     <button onClick={onMenuToggle} className="md:hidden p-1.5 -ml-1.5 mr-1 text-white/70 hover:text-white rounded-md">
                         <Menu size={20} />
                     </button>
-                    <UtensilsCrossed size={16} className="text-white/80 hidden sm:block" />
-                    <span className="font-black tracking-tighter text-2xl text-white leading-none">TIMO<span className="text-[#061210]">TOMILLO</span></span>
-                    <span className="text-white/60 text-xs hidden sm:block">/ Admin</span>
+                    <div className="flex items-baseline gap-2 whitespace-nowrap">
+                        <UtensilsCrossed size={16} className="text-white/80 hidden sm:block self-center" />
+                        <span className="font-black tracking-tighter text-2xl text-white leading-none">
+                            TIMO<span className="text-[#061210]">TOMILLO</span>
+                        </span>
+                        <span className="text-white/60 text-xs font-bold uppercase tracking-widest hidden sm:block">/ Admin</span>
+                    </div>
                 </div>
 
                 {/* Right side actions */}
