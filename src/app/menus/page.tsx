@@ -128,7 +128,7 @@ export default function MenusPage() {
                     <div className="flex items-center gap-3 text-[#3b6154]">
                         <CalendarDays className="w-5 h-5 md:w-8 md:h-8 xl:w-5 xl:h-5" />
                         <h1 className="text-2xl md:text-4xl xl:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-                            Menú Semanal
+                            Menú Semanal {userName && <>de <span className="text-[#3b6154]">{userName}</span></>}
                         </h1>
                     </div>
                     <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-lg xl:text-sm">
