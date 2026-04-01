@@ -55,4 +55,12 @@ export const reservationService = {
     async deleteReservation(id: string, cc: string): Promise<void> {
         await apiClient.delete(`/reservations/${id}`, { params: { cc } });
     },
+
+    /**
+     * Mark a reservation ticket as printed, making the protein selection immutable.
+     */
+    async markAsPrinted(id: string): Promise<ReservationResponse> {
+        const { data } = await apiClient.patch<ReservationResponse>(`/reservations/${id}/printed`);
+        return data;
+    },
 };

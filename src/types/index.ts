@@ -33,6 +33,7 @@ export interface Menu {
     hasReservation?: boolean;
     reservationId?: string | null;
     reservedProteinId?: string | null;
+    isPrinted?: boolean;
 }
 
 export interface OrderItem {
