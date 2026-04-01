@@ -77,7 +77,7 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
         );
     }
 
-    const { id: menuId, drink, defaultProteinType, proteinOptions, sideOptions, status, hasReservation, reservationId, reservedProteinId } = menu;
+    const { id: menuId, drink, defaultProteinType, proteinOptions, sideOptions, status, hasReservation, reservationId, reservedProteinId, isPrinted } = menu;
     const isServed = status === 'SERVED';
     const showReservedState = hasReservation && !isServed && !isEditing;
     const isLocked = isServed || showReservedState;
@@ -228,7 +228,14 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
         printWindow.document.close();
 
         // Cierra sesión y redirige tras imprimir el ticket para agilizar el proceso
-        setTimeout(() => {
+        setTimeout(async () => {
+            try {
+                if (reservationId) {
+                    await reservationService.markAsPrinted(reservationId);
+                }
+            } catch (err) {
+                console.error('Error marking as printed', err);
+            }
             authService.logout('/');
         }, 1000);
     };
@@ -278,10 +285,10 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                                     <>
                                         <div className="w-px bg-white/20"></div>
                                         <button
-                                            onClick={() => setIsEditing(true)}
-                                            disabled={isDeleting}
-                                            className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 transition-colors"
-                                            title="Editar reserva"
+                                            onClick={() => !isPrinted && setIsEditing(true)}
+                                            disabled={isDeleting || isPrinted}
+                                            className={`p-1.5 transition-colors ${isPrinted ? 'text-white/30 cursor-not-allowed' : 'text-white/80 hover:text-white hover:bg-white/20'}`}
+                                            title={isPrinted ? "Ticket impreso, edición bloqueada" : "Editar reserva"}
                                         >
                                             <Pencil size={14} />
                                         </button>
