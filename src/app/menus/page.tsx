@@ -10,24 +10,55 @@ import { menuService } from '@/services/menu-service';
 import { whitelistService } from '@/services/whitelist-service';
 import { Menu } from '@/types';
 
-// Helper to get Mon-Sat for the current week based on Colombia time
-function getCurrentWeekDays(): Date[] {
-    const today = new Date();
-    // Use local time approximations for now, assuming user is in Colombia
-    const dayOfWeek = today.getDay(); // 0 is Sunday, 1 is Monday
+// Colombia is always UTC-5 (no daylight saving time)
+const COLOMBIA_OFFSET_MS = -5 * 60 * 60 * 1000;
 
-    // Calculate difference to Monday. If Sunday (0), Monday is -6. Otherwise day - 1.
-    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const monday = new Date(today);
-    monday.setDate(today.getDate() + diffToMonday);
-    monday.setHours(0, 0, 0, 0);
+/**
+ * Returns a Date representing "now" in Colombia time,
+ * using the same UTC-5 logic as the backend date.util.ts.
+ */
+function nowColombia(): Date {
+    return new Date(Date.now() + COLOMBIA_OFFSET_MS);
+}
+
+/**
+ * Checks whether a given JS Date (UTC midnight) falls on a weekend.
+ */
+function isWeekend(date: Date): boolean {
+    const day = date.getUTCDay(); // 0 = Sunday, 6 = Saturday
+    return day === 0 || day === 6;
+}
+
+/**
+ * Returns today (Colombia) + the next 2 business days, skipping weekends.
+ * This mirrors the backend dayOfWeek logic so the 3 cards always
+ * show Mon–Fri días hábiles only.
+ *
+ * Example flows:
+ *   Monday   → Mon, Tue, Wed
+ *   Tuesday  → Tue, Wed, Thu
+ *   Thursday → Thu, Fri, Mon
+ *   Friday   → Fri, Mon, Tue
+ */
+function getNext3WorkDays(): Date[] {
+    const now = nowColombia();
+    // Build a UTC midnight date from Colombia's local year/month/day
+    const startDate = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+    );
 
     const days: Date[] = [];
-    for (let i = 0; i < 6; i++) { // Lunes to Sabado (6 days)
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + i);
-        days.push(d);
+    let cursor = new Date(startDate);
+
+    while (days.length < 3) {
+        if (!isWeekend(cursor)) {
+            days.push(new Date(cursor));
+        }
+        if (days.length < 3) {
+            cursor.setUTCDate(cursor.getUTCDate() + 1);
+        }
     }
+
     return days;
 }
 
@@ -70,7 +101,7 @@ export default function MenusPage() {
             setUserName(session.name);
         }
 
-        const days = getCurrentWeekDays();
+        const days = getNext3WorkDays();
         setWeekDays(days);
 
         days.forEach(day => fetchDayMenu(day, storedCedula));
@@ -128,17 +159,17 @@ export default function MenusPage() {
                     <div className="flex items-center gap-3 text-[#3b6154]">
                         <CalendarDays className="w-5 h-5 md:w-8 md:h-8 xl:w-5 xl:h-5" />
                         <h1 className="text-2xl md:text-4xl xl:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-                            Menú Semanal {userName && <>de <span className="text-[#3b6154]">{userName}</span></>}
+                            Menú del día {userName && <>— <span className="text-[#3b6154]">{userName}</span></>}
                         </h1>
                     </div>
                     <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-lg xl:text-sm">
-                        Selecciona o visualiza el menú disponible para esta semana.
+                        Visualiza los próximos 3 días hábiles y reserva tu almuerzo.
                     </p>
                 </div>
 
                 {/* Calendar Layout: Scroll mobile, Center 2-card Carousel tablet, Grid desktop */}
                 <div className="flex-1 w-full pb-4 flex md:justify-center xl:block">
-                    <div className="flex overflow-x-auto w-full md:max-w-[712px] xl:max-w-none xl:grid xl:grid-cols-6 xl:overflow-visible snap-x snap-mandatory gap-4 md:gap-8 xl:gap-4 pb-4 scrollbar-hide px-4 md:px-0 xl:px-0">
+                    <div className="flex overflow-x-auto w-full md:max-w-[712px] xl:max-w-none xl:grid xl:grid-cols-3 xl:overflow-visible snap-x snap-mandatory gap-4 md:gap-8 xl:gap-4 pb-4 scrollbar-hide px-4 md:px-0 xl:px-0">
                         {weekDays.map((day, idx) => {
                             const yyyy = day.getFullYear();
                             const mm = String(day.getMonth() + 1).padStart(2, '0');
