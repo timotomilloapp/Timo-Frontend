@@ -27,9 +27,10 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
     const [showTicket, setShowTicket] = useState(false);
     const [reservationError, setReservationError] = useState<string | null>(null);
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const isTomorrowOrLater = date.getTime() > today.getTime();
+    // `date` is always a UTC-midnight object — compare against UTC midnight today
+    const todayUTC = new Date();
+    todayUTC.setUTCHours(0, 0, 0, 0);
+    const isTomorrowOrLater = date.getTime() > todayUTC.getTime();
 
     // Initialize the selected protein if there is a reservation
     useEffect(() => {
@@ -40,8 +41,10 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
         }
     }, [menu?.reservedProteinId, menu?.defaultProteinType, isTomorrowOrLater]);
 
-    const dayName = DAYS[date.getDay()];
-    const dateString = `${date.getDate()} de ${MONTHS[date.getMonth()]}`;
+    // Use getUTC* because `date` is a UTC-midnight object; local getDay/getDate
+    // would shift back by the Colombia UTC-5 offset and show the wrong day.
+    const dayName = DAYS[date.getUTCDay()];
+    const dateString = `${date.getUTCDate()} de ${MONTHS[date.getUTCMonth()]}`;
 
     if (isLoading) {
         return (
@@ -143,91 +146,132 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
     const handlePrintTicket = () => {
         if (!menu || !selectedProteinId) return;
 
+
         const proteinName = allProteinsRaw.find(p => p?.id === selectedProteinId)?.name || 'Sin especificar';
 
-        // Formato para ticket/impresora térmica (POS) - 58mm/80mm style
-        const printWindow = window.open('', '_blank');
-        if (!printWindow) return;
+        // HTML optimizado para impresora térmica POS (58mm/80mm)
+        const ticketHtml = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Reserva TIMO</title>
+    <style>
+        @page {
+            size: 80mm auto;
+            margin: 0;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            width: 76mm;
+            margin: 0 auto;
+            padding: 6mm 4mm;
+            color: #000;
+            background: #fff;
+            font-size: 13px;
+            line-height: 1.4;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .text-center { text-align: center; }
+        .font-bold { font-weight: bold; }
+        .text-xl { font-size: 22px; }
+        .text-sm { font-size: 11px; }
+        .text-md { font-size: 15px; }
+        .my-2 { margin: 8px 0; }
+        .my-4 { margin: 16px 0; }
+        .mb-1 { margin-bottom: 4px; }
+        .border-b { border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
+        .flex-between { display: flex; justify-content: space-between; gap: 8px; }
+        .uppercase { text-transform: uppercase; }
+        .label { font-weight: normal; font-size: 11px; }
+        .value { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="text-center">
+        <div class="font-bold text-xl my-2 border-b" style="font-family: sans-serif; letter-spacing: -1px; color: #3b6154;">TIMO<span style="color: #061210;">TOMILLO</span></div>
+        <div class="font-bold my-2">RESERVA DE ALMUERZO</div>
+        <div class="text-sm my-2">${dateString}</div>
+    </div>
+    <div class="my-4 border-b">
+        <div class="flex-between my-2">
+            <span class="label">NOMBRE:</span>
+            <span class="value" style="text-align:right;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${userName || 'No especificado'}</span>
+        </div>
+        <div class="flex-between my-2">
+            <span class="label">C.C:</span>
+            <span class="value">${cedula}</span>
+        </div>
+    </div>
+    <div class="my-4 border-b">
+        <div class="label text-center mb-1">PROTEÍNA SELECCIONADA</div>
+        <div class="value text-md text-center uppercase my-2">${proteinName}</div>
+    </div>
+    <div class="text-center text-sm my-4">
+        Comprobante generado el<br/>
+        ${new Date().toLocaleString('es-CO')}
+    </div>
+    <div class="text-center font-bold my-4">*** GRACIAS ***</div>
+</body>
+</html>`;
 
-        const ticketHtml = `
-            <!DOCTYPE html>
-            <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Ticket Reserva TIMO</title>
-                <style>
-                    @page { margin: 0; size: auto; }
-                    body { 
-                        font-family: 'Courier New', Courier, monospace; 
-                        width: 300px; /* Ancho típico de impresora POS 80mm */
-                        margin: 0 auto;
-                        padding: 20px 10px;
-                        color: #000;
-                        background: #fff;
-                        font-size: 14px;
-                        line-height: 1.4;
-                    }
-                    .text-center { text-align: center; }
-                    .font-bold { font-weight: bold; }
-                    .text-xl { font-size: 24px; }
-                    .text-sm { font-size: 12px; }
-                    .text-md { font-size: 16px; }
-                    .my-2 { margin: 10px 0; }
-                    .my-4 { margin: 20px 0; }
-                    .border-b { border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
-                    .flex-between { display: flex; justify-content: space-between; gap: 10px;}
-                    .uppercase { text-transform: uppercase; }
-                    .label { font-weight: normal; font-size: 12px; }
-                    .value { font-weight: bold; }
-                </style>
-            </head>
-            <body>
-                <div class="text-center">
-                    <div class="font-bold text-xl tracking-tighter my-2 border-b" style="font-family: sans-serif; letter-spacing: -1px; color: #3b6154;">TIMO<span style="color: #061210;">TOMILLO</span></div>
-                    <div class="font-bold my-2">RESERVA DE ALMUERZO</div>
-                    <div class="text-sm my-2">${dateString}</div>
-                </div>
-                
-                <div class="my-4 border-b">
-                    <div class="flex-between my-2">
-                        <span class="label">NOMBRE:</span>
-                        <span class="value" style="text-align: right; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${userName || 'No especificado'}</span>
-                    </div>
-                    <div class="flex-between my-2">
-                        <span class="label">C.C:</span>
-                        <span class="value">${cedula}</span>
-                    </div>
-                </div>
+        // ── Intentar imprimir vía RawBT WebSocket (sin diálogo) ──────────────
+        // RawBT expone un WebSocket en ws://localhost:40213
+        // Si está disponible, envía el HTML directamente; si no, fallback a window.print()
 
-                <div class="my-4 border-b">
-                    <div class="label text-center mb-1">PROTEÍNA SELECCIONADA</div>
-                    <div class="value text-md text-center uppercase my-2">${proteinName}</div>
-                </div>
+        const tryRawBT = new Promise<boolean>((resolve) => {
+            try {
+                const ws = new WebSocket('ws://localhost:40213');
 
-                <div class="text-center text-sm my-4">
-                    Comprobante generado el<br/>
-                    ${new Date().toLocaleString('es-CO')}
-                </div>
-                <div class="text-center font-bold my-4">
-                    *** GRACIAS ***
-                </div>
-                <script>
-                    window.onload = function() { 
-                        setTimeout(function() {
-                            window.print(); 
-                            window.close();
-                        }, 500);
-                    };
-                </script>
-            </body>
-            </html>
-        `;
+                const timeout = setTimeout(() => {
+                    ws.close();
+                    resolve(false);
+                }, 1500);
 
-        printWindow.document.write(ticketHtml);
-        printWindow.document.close();
+                ws.onopen = () => {
+                    clearTimeout(timeout);
+                    // RawBT espera el HTML como texto plano en el mensaje
+                    ws.send(ticketHtml);
+                    ws.close();
+                    resolve(true);
+                };
 
-        // Cierra sesión y redirige tras imprimir el ticket para agilizar el proceso
+                ws.onerror = () => {
+                    clearTimeout(timeout);
+                    resolve(false);
+                };
+            } catch {
+                resolve(false);
+            }
+        });
+
+        tryRawBT.then((usedRawBT) => {
+            if (!usedRawBT) {
+                // ── Fallback: abrir ventana y disparar window.print() ──────────
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) return;
+
+                // Inyectamos autoprint dentro del HTML
+                const printableHtml = ticketHtml.replace(
+                    '</body>',
+                    `<script>
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.print();
+                                window.close();
+                            }, 400);
+                        };
+                    <\/script></body>`
+                );
+
+                printWindow.document.write(printableHtml);
+                printWindow.document.close();
+            }
+        });
+
+        // ── Marcar como impreso y cerrar sesión ───────────────────────────────
         setTimeout(async () => {
             try {
                 if (reservationId) {
@@ -243,31 +287,49 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
     return (
         <div className="flex flex-col w-full h-full pb-4">
             <Card className={`h-[480px] sm:h-[500px] md:h-[580px] xl:h-[500px] flex flex-col w-full min-w-0 overflow-hidden border-zinc-200 dark:border-zinc-800 transition-all duration-300 ${isServed ? 'bg-zinc-50 dark:bg-zinc-950 opacity-70 grayscale-[0.2]' : 'bg-white dark:bg-zinc-900 ' + (showReservedState ? 'border-[#3b6154]/60 dark:border-[#3b6154]/50 shadow-[0_0_15px_rgba(59,97,84,0.15)] dark:shadow-[0_0_15px_rgba(59,97,84,0.25)]' : 'hover:border-[#3b6154]/50 dark:hover:border-[#3b6154]/50 hover:shadow-[0_8px_25px_rgba(59,97,84,0.15)] dark:hover:shadow-[0_8px_25px_rgba(59,97,84,0.25)]')}`}>
-                <CardHeader className={`pb-1 pt-4 border-b border-[#3b6154] dark:border-[#3b6154] flex flex-row !items-center justify-between gap-2 px-4 !grid-none !auto-rows-auto min-h-[62px] text-white bg-[#3b6154]`}>
+                <CardHeader className={`border-b border-[#3b6154] dark:border-[#3b6154] flex flex-row !items-center justify-between gap-2 px-4 !grid-none !auto-rows-auto text-white bg-[#3b6154] ${(!showReservedState && !isServed && !isEditing) ? 'py-5 min-h-[80px]' : 'pb-1 pt-4 min-h-[62px]'}`}>
                     <div className="flex flex-col justify-center flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                            <CardTitle className={`text-lg font-bold tracking-tight leading-none truncate text-white`}>
-                                {dayName}
-                            </CardTitle>
-                            {showReservedState && (
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#d8efe3] bg-[#274037] px-2 py-0.5 rounded-full shrink-0">
-                                    Reservaste
+                        {(!showReservedState && !isServed && !isEditing) ? (
+                            /* ── Estado sin reserva: día + fecha en una sola línea grande ── */
+                            <div className="flex flex-col gap-1">
+                                <CardTitle className="text-2xl font-black tracking-tight leading-none text-white">
+                                    {dayName}
+                                </CardTitle>
+                                <span className="text-base font-semibold text-white/80 leading-none">
+                                    {dateString}
                                 </span>
-                            )}
-                            {isServed && (
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 bg-white/70 px-2 py-0.5 rounded-full shrink-0">
-                                    Servido
-                                </span>
-                            )}
-                            {isEditing && (
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#3b6154] bg-white px-2 py-0.5 rounded-full shrink-0">
-                                    Editando
-                                </span>
-                            )}
-                        </div>
-                        <CardDescription className="text-[10px] font-bold uppercase tracking-wider text-white/70 mt-1 truncate">
-                            {dateString}
-                        </CardDescription>
+                            </div>
+                        ) : (
+                            /* ── Estado reservado / servido / editando: layout con badges ── */
+                            <>
+                                {/* Day name + date stacked; badges sit to their right */}
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <div className="flex flex-col min-w-0">
+                                        <CardTitle className="text-lg font-bold tracking-tight leading-none truncate text-white">
+                                            {dayName}
+                                        </CardTitle>
+                                        <CardDescription className="text-xs font-bold uppercase tracking-wider text-white/70 mt-1">
+                                            {dateString}
+                                        </CardDescription>
+                                    </div>
+                                    {showReservedState && (
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#d8efe3] bg-[#274037] px-2 py-0.5 rounded-full shrink-0">
+                                            Reservaste
+                                        </span>
+                                    )}
+                                    {isServed && (
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 bg-white/70 px-2 py-0.5 rounded-full shrink-0">
+                                            Servido
+                                        </span>
+                                    )}
+                                    {isEditing && (
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#3b6154] bg-white px-2 py-0.5 rounded-full shrink-0">
+                                            Editando
+                                        </span>
+                                    )}
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     <div className="flex items-center justify-end gap-2 shrink-0">
@@ -307,6 +369,7 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                         )}
                     </div>
                 </CardHeader>
+
 
                 <CardContent className="flex-1 p-0 flex flex-col divide-y divide-zinc-100 dark:divide-zinc-800 overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {/* Bebida Block - Desactivado visualmente

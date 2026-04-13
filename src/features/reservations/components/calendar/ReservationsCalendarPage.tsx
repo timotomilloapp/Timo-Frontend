@@ -9,9 +9,10 @@ import { ReservationCalendarCard } from './ReservationCalendarCard';
 import { ProteinSummaryTicketModal } from '../ProteinSummaryTicketModal';
 import { MenuReservationsDialog } from '../MenuReservationsDialog';
 import { MenuDetailsDialog } from '../../../menus/components/MenuDetailsDialog';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useReservationsBulkServed, useReservationsBulkCancelled } from '../../hooks/useReservations';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 export function ReservationsCalendarPage() {
     const calendar = useMonthCalendar();
@@ -26,6 +27,9 @@ export function ReservationsCalendarPage() {
     const [viewReservationsMenuId, setViewReservationsMenuId] = useState<string | null>(null);
     const [downloadSummaryDate, setDownloadSummaryDate] = useState<string | null>(null);
     const [viewDetailsMenu, setViewDetailsMenu] = useState<MenuResponse | null>(null);
+
+    type ConfirmActionType = 'served' | 'cancel' | null;
+    const [confirmAction, setConfirmAction] = useState<ConfirmActionType>(null);
 
     const stickyMenuRef = useRef<HTMLDivElement>(null);
 
@@ -71,15 +75,29 @@ export function ReservationsCalendarPage() {
         setDownloadSummaryDate(dateStr);
     };
 
-    const handleBulkMarkServed = async () => {
-        // Ejecutamos promises en paralelo para todas las fechas seleccionadas
-        await Promise.all(selectedDates.map(date => bulkServed(date)));
-        setSelectedDates([]);
+    const handleBulkMarkServed = () => {
+        if (selectedDates.length === 0) return;
+        setConfirmAction('served');
     };
 
-    const handleBulkCancel = async () => {
-        await Promise.all(selectedDates.map(date => bulkCancelled(date)));
-        setSelectedDates([]);
+    const handleBulkCancel = () => {
+        if (selectedDates.length === 0) return;
+        setConfirmAction('cancel');
+    };
+
+    const executeConfirmAction = async () => {
+        if (selectedDates.length === 0 || !confirmAction) return;
+
+        try {
+            if (confirmAction === 'served') {
+                await Promise.all(selectedDates.map(date => bulkServed(date)));
+            } else if (confirmAction === 'cancel') {
+                await Promise.all(selectedDates.map(date => bulkCancelled(date)));
+            }
+            setSelectedDates([]);
+        } finally {
+            setConfirmAction(null);
+        }
     };
 
     return (
@@ -142,7 +160,7 @@ export function ReservationsCalendarPage() {
                             size="sm"
                             className="bg-transparent border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 h-8"
                             onClick={handleBulkCancel}
-                            disabled={isCancellingBulk || isServingBulk}
+                            disabled={isCancellingBulk || isServingBulk || confirmAction !== null}
                         >
                             Cancelar
                         </Button>
@@ -150,9 +168,17 @@ export function ReservationsCalendarPage() {
                             size="sm"
                             className="bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 h-8 border-none"
                             onClick={handleBulkMarkServed}
-                            disabled={isCancellingBulk || isServingBulk}
+                            disabled={isCancellingBulk || isServingBulk || confirmAction !== null}
                         >
-                            {(isCancellingBulk || isServingBulk) ? 'Procesando...' : 'Marcar Servidas'}
+                            Marcar Servidas
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-zinc-400 hover:text-zinc-600 dark:hover:text-white rounded-full ml-2"
+                            onClick={() => setSelectedDates([])}
+                        >
+                            <X className="h-4 w-4" />
                         </Button>
                     </div>
                 </div>
@@ -171,6 +197,18 @@ export function ReservationsCalendarPage() {
             <MenuDetailsDialog
                 menu={viewDetailsMenu}
                 onClose={() => setViewDetailsMenu(null)}
+            />
+
+            <ConfirmationDialog
+                isOpen={confirmAction !== null}
+                onClose={() => setConfirmAction(null)}
+                onConfirm={executeConfirmAction}
+                title={confirmAction === 'served' ? "Marcar como servidas" : "Cancelar reservaciones en bloque"}
+                description={`¿Estás seguro que deseas ${confirmAction === 'served' ? 'marcar como servidas' : 'cancelar'} todas las reservaciones en los ${selectedDates.length} días seleccionados?`}
+                confirmText={confirmAction === 'served' ? "Sí, marcar servidas" : "Sí, cancelar"}
+                cancelText="Cerrar"
+                isDangerous={confirmAction === 'cancel'}
+                isLoading={isCancellingBulk || isServingBulk}
             />
         </div>
     );
