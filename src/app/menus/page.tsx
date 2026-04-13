@@ -10,15 +10,25 @@ import { menuService } from '@/services/menu-service';
 import { whitelistService } from '@/services/whitelist-service';
 import { Menu } from '@/types';
 
-// Colombia is always UTC-5 (no daylight saving time)
-const COLOMBIA_OFFSET_MS = -5 * 60 * 60 * 1000;
-
 /**
- * Returns a Date representing "now" in Colombia time,
- * using the same UTC-5 logic as the backend date.util.ts.
+ * Returns today's date in Colombia (America/Bogota, UTC-5) as a plain
+ * { year, month (1-based), day } object.
+ *
+ * Using Intl.DateTimeFormat guarantees correctness even at UTC midnight
+ * boundaries where simple offset arithmetic can return the wrong calendar day.
  */
-function nowColombia(): Date {
-    return new Date(Date.now() + COLOMBIA_OFFSET_MS);
+function todayColombiaYMD(): { year: number; month: number; day: number } {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Bogota',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    }).formatToParts(new Date());
+
+    const get = (type: string) =>
+        parseInt(parts.find(p => p.type === type)!.value, 10);
+
+    return { year: get('year'), month: get('month'), day: get('day') };
 }
 
 /**
@@ -30,33 +40,34 @@ function isWeekend(date: Date): boolean {
 }
 
 /**
- * Returns today (Colombia) + the next 2 business days, skipping weekends.
- * This mirrors the backend dayOfWeek logic so the 3 cards always
- * show Mon–Fri días hábiles only.
+ * Returns exactly ONE next business day relative to today in Colombia time,
+ * skipping weekends.
  *
  * Example flows:
- *   Monday   → Mon, Tue, Wed
- *   Tuesday  → Tue, Wed, Thu
- *   Thursday → Thu, Fri, Mon
- *   Friday   → Fri, Mon, Tue
+ *   Monday   → Tuesday
+ *   Tuesday  → Wednesday
+ *   Thursday → Friday
+ *   Friday   → Monday  (skips Saturday + Sunday)
+ *   Saturday → Monday  (skips Sunday)
+ *   Sunday   → Monday
  */
-function getNext3WorkDays(): Date[] {
-    const now = nowColombia();
-    // Build a UTC midnight date from Colombia's local year/month/day
-    const startDate = new Date(
-        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-    );
+function getNextWorkDay(): Date[] {
+    const { year, month, day } = todayColombiaYMD();
+    // Work with UTC-midnight dates so getUTCDay() reflects the calendar day
+    const startDate = new Date(Date.UTC(year, month - 1, day));
 
     const days: Date[] = [];
-    let cursor = new Date(startDate);
+    // Start from tomorrow
+    const cursor = new Date(startDate);
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
 
-    while (days.length < 3) {
+    while (days.length < 1) {
         if (!isWeekend(cursor)) {
             days.push(new Date(cursor));
         }
-        if (days.length < 3) {
-            cursor.setUTCDate(cursor.getUTCDate() + 1);
-        }
+        // Always advance to avoid infinite loop; if we just pushed a valid
+        // day the while condition will exit after this iteration.
+        cursor.setUTCDate(cursor.getUTCDate() + 1);
     }
 
     return days;
@@ -71,10 +82,10 @@ export default function MenusPage() {
     const [isLoading, setIsLoading] = useState<Record<string, boolean>>({});
 
     const fetchDayMenu = async (date: Date, userCc?: string) => {
-        // format YYYY-MM-DD
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
+        // Date objects from getNextWorkDay() are UTC-midnight; read with getUTC* methods
+        const yyyy = date.getUTCFullYear();
+        const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const dd = String(date.getUTCDate()).padStart(2, '0');
         const dateStr = `${yyyy}-${mm}-${dd}`;
 
         setIsLoading(prev => ({ ...prev, [dateStr]: true }));
@@ -101,7 +112,7 @@ export default function MenusPage() {
             setUserName(session.name);
         }
 
-        const days = getNext3WorkDays();
+        const days = getNextWorkDay();
         setWeekDays(days);
 
         days.forEach(day => fetchDayMenu(day, storedCedula));
@@ -163,21 +174,21 @@ export default function MenusPage() {
                         </h1>
                     </div>
                     <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-lg xl:text-sm">
-                        Visualiza los próximos 3 días hábiles y reserva tu almuerzo.
+                        Reserva y prepara tu almuerzo para el siguiente día hábil.
                     </p>
                 </div>
 
                 {/* Calendar Layout: Scroll mobile, Center 2-card Carousel tablet, Grid desktop */}
-                <div className="flex-1 w-full pb-4 flex md:justify-center xl:block">
-                    <div className="flex overflow-x-auto w-full md:max-w-[712px] xl:max-w-none xl:grid xl:grid-cols-3 xl:overflow-visible snap-x snap-mandatory gap-4 md:gap-8 xl:gap-4 pb-4 scrollbar-hide px-4 md:px-0 xl:px-0">
+                <div className="flex-1 w-full pb-4 flex justify-center text-center">
+                    <div className="w-full sm:w-[320px] md:w-[360px]">
                         {weekDays.map((day, idx) => {
-                            const yyyy = day.getFullYear();
-                            const mm = String(day.getMonth() + 1).padStart(2, '0');
-                            const dd = String(day.getDate()).padStart(2, '0');
+                            const yyyy = day.getUTCFullYear();
+                            const mm = String(day.getUTCMonth() + 1).padStart(2, '0');
+                            const dd = String(day.getUTCDate()).padStart(2, '0');
                             const dateStr = `${yyyy}-${mm}-${dd}`;
 
                             return (
-                                <div key={idx} className="w-[85vw] sm:w-[320px] md:w-[340px] xl:w-auto shrink-0 snap-center">
+                                <div key={idx} className="w-full mx-auto">
                                     <MenuCard
                                         date={day}
                                         menu={menus[dateStr] || null}
