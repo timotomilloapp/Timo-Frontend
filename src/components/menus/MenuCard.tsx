@@ -249,42 +249,38 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
 
         tryRawBT.then((usedRawBT) => {
             if (!usedRawBT) {
-                // ── Fallback: abrir ventana y disparar window.print() ──────────
-                const printWindow = window.open('', '_blank');
-                if (!printWindow) return;
-
-                // Inyectamos autoprint dentro del HTML
-                const printableHtml = ticketHtml.replace(
-                    '</body>',
-                    `<script>
-                        // Esperar un momento para asegurar que el navegador renderice el DOM antes de capturarlo
-                        setTimeout(function() {
-                            window.print();
-                        }, 500);
-
-                        // Cerrar la ventana únicamente cuando se termine o cancele la impresión
-                        window.onafterprint = function() {
-                            window.close();
-                        };
-                    <\/script></body>`
-                );
-
-                printWindow.document.write(printableHtml);
-                printWindow.document.close();
+                // ── Fallback: usar iframe oculto para no perder el contexto ──────────
+                // Evitamos 'document.write' usando srcdoc
+                const iframe = document.createElement('iframe');
+                iframe.style.position = 'fixed';
+                iframe.style.right = '0';
+                iframe.style.bottom = '0';
+                iframe.style.width = '0';
+                iframe.style.height = '0';
+                iframe.style.border = '0';
+                iframe.srcdoc = ticketHtml;
+                
+                iframe.onload = () => {
+                    setTimeout(() => {
+                        iframe.contentWindow?.focus();
+                        iframe.contentWindow?.print();
+                    }, 200);
+                };
+                
+                document.body.appendChild(iframe);
             }
         });
 
-        // ── Marcar como impreso y cerrar sesión ───────────────────────────────
-        setTimeout(async () => {
-            try {
-                if (reservationId) {
-                    await reservationService.markAsPrinted(reservationId);
-                }
-            } catch (err) {
-                console.error('Error marking as printed', err);
-            }
+        // ── Marcar como impreso ───────────────────────────────
+        if (reservationId) {
+            reservationService.markAsPrinted(reservationId).catch(err => console.error('Error marking as printed', err));
+        }
+
+        // Cierra sesión y redirige, daremos 7 segundos para que el 
+        // Android Print Spooler procese e imprima cómodamente el ticket.
+        setTimeout(() => {
             authService.logout('/');
-        }, 1000);
+        }, 7000);
     };
 
     return (
@@ -579,13 +575,21 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                             >
                                 <ReceiptText size={14} /> Imprimir Ticket
                             </Button>
-                            <Button
-                                variant="outline"
-                                className="w-full text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                                onClick={() => setShowTicket(false)}
-                            >
-                                Ver menú
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    className="flex-1 text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                    onClick={() => setShowTicket(false)}
+                                >
+                                    Ver menú
+                                </Button>
+                                <Button
+                                    className="flex-1 text-xs font-bold uppercase tracking-wider bg-red-600 hover:bg-red-700 text-white border-none shadow-sm transition-colors duration-300"
+                                    onClick={() => authService.logout('/')}
+                                >
+                                    Salir
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
