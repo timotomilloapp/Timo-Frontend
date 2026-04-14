@@ -25,15 +25,14 @@ export function ProteinSummaryTicketModal({ date, onClose }: ProteinSummaryTicke
 
     return (
         <Dialog open={!!date} onOpenChange={(open: boolean) => !open && onClose()}>
-            <DialogContent className="sm:max-w-[420px] p-0 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden print:w-full print:max-w-none print:shadow-none print:border-none print:p-0 print:bg-white">
-                <DialogHeader className="p-6 pb-4 bg-zinc-50 dark:bg-zinc-900 print:hidden shrink-0 border-b border-zinc-200 dark:border-zinc-800">
-                    <DialogTitle className="flex justify-between items-center pr-8 text-zinc-900 dark:text-zinc-100">
+            <DialogContent className="sm:max-w-[420px] p-0 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden print:w-full print:max-w-none print:shadow-none print:border-none print:p-0 print:bg-white [&_[data-slot=dialog-close]]:text-white [&_[data-slot=dialog-close]]:opacity-80 [&_[data-slot=dialog-close]:hover]:opacity-100 [&_[data-slot=dialog-close]:hover]:bg-white/10">
+                <DialogHeader className="p-5 pb-4 bg-zinc-900 dark:bg-zinc-950 print:hidden shrink-0 border-b border-zinc-700 rounded-t-lg">
+                    <DialogTitle className="flex justify-between items-center pr-8 text-white">
                         <span>Resumen de Cocina</span>
                         <Button
-                            variant="outline"
                             size="sm"
                             onClick={handlePrint}
-                            className="gap-2 shrink-0 bg-white hover:bg-zinc-100 dark:bg-zinc-950 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-800 shadow-sm h-8"
+                            className="gap-2 shrink-0 bg-white hover:bg-zinc-100 text-zinc-900 border-none shadow-sm h-8 font-bold"
                         >
                             <Download className="h-3.5 w-3.5" />
                             Imprimir
@@ -91,6 +90,7 @@ export function ProteinSummaryTicketModal({ date, onClose }: ProteinSummaryTicke
                                 No se pudo cargar el resumen.
                             </div>
                         )}
+
                     </div>
                 </div>
             </DialogContent>
