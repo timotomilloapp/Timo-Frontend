@@ -249,21 +249,25 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
 
         tryRawBT.then((usedRawBT) => {
             if (!usedRawBT) {
-                // ── OPCIÓN A: Intent directo hacia RawBT (Omite la pantalla intermedia) ──────────
-                // Esto envía el HTML base64 directo a la cola de RawBT sin pasar por el Print Spooler de Android
-                try {
-                    // Evitamos 'unescape' (obsoleto) usando TextEncoder para proteger tildes y caracteres UTF-8
-                    const bytes = new TextEncoder().encode(ticketHtml);
-                    const binString = Array.from(bytes, (byte) => String.fromCodePoint(byte)).join("");
-                    const base64Html = btoa(binString);
-                    
-                    const intentUrl = `intent:${base64Html}#Intent;scheme=rawbt;type=text/html;package=ru.a402d.rawbtprinter;end;`;
-                    
-                    // Disparamos el intent directamente
-                    window.location.href = intentUrl;
-                } catch (err) {
-                    console.error("Error con Intent", err);
-                }
+                // ── Fallback: usar iframe oculto para no perder el contexto ──────────
+                // Evitamos 'document.write' usando srcdoc
+                const iframe = document.createElement('iframe');
+                iframe.style.position = 'fixed';
+                iframe.style.right = '0';
+                iframe.style.bottom = '0';
+                iframe.style.width = '0';
+                iframe.style.height = '0';
+                iframe.style.border = '0';
+                iframe.srcdoc = ticketHtml;
+                
+                iframe.onload = () => {
+                    setTimeout(() => {
+                        iframe.contentWindow?.focus();
+                        iframe.contentWindow?.print();
+                    }, 200);
+                };
+                
+                document.body.appendChild(iframe);
             }
         });
 
@@ -272,12 +276,11 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
             reservationService.markAsPrinted(reservationId).catch(err => console.error('Error marking as printed', err));
         }
 
-        // Cierra sesión y redirige casi de inmediato (5 segundos).
-        // Como estamos usando "Intent", RawBT recibe el ticket al instante,
-        // por lo que podemos destruir la página y cerrar sesión rápido sin romper nada.
+        // Cierra sesión y redirige, daremos 30 segundos para que el 
+        // Android Print Spooler procese e imprima cómodamente el ticket.
         setTimeout(() => {
             authService.logout('/');
-        }, 5000);
+        }, 30000);
     };
 
     return (
