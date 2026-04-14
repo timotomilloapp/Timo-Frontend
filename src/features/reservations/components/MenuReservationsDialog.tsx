@@ -98,9 +98,13 @@ export function MenuReservationsDialog({ menuId, onClose }: MenuReservationsDial
                 <DialogContent 
                     className="sm:max-w-[800px] h-[85vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-zinc-950 border-transparent dark:border-zinc-800"
                     onInteractOutside={(e) => {
+                        if (confirmAction !== null) {
+                            e.preventDefault();
+                            return;
+                        }
                         const originalEvent = (e as any).detail?.originalEvent;
                         const target = (originalEvent?.target || e.target) as Element;
-                        if (target?.closest('#sticky-batch-menu')) {
+                        if (target?.closest('#sticky-batch-menu') || target?.closest('[role="alertdialog"]')) {
                             e.preventDefault();
                         }
                     }}
@@ -224,56 +228,55 @@ export function MenuReservationsDialog({ menuId, onClose }: MenuReservationsDial
                             </Button>
                         </div>
                     </div>
-                </DialogContent>
-
-                {/* Sticky Action Menu for Batch Operations overlapping the modal */}
-                {selectedIds.length > 0 && (
-                    <div id="sticky-batch-menu" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-zinc-900 dark:bg-white text-zinc-50 dark:text-zinc-900 px-6 py-3 rounded-full shadow-lg border border-zinc-800 dark:border-zinc-200 flex items-center justify-between gap-6 animate-in slide-in-from-bottom flex-wrap w-max">
-                        <span className="font-semibold text-sm">
-                            {selectedIds.length} reserva{selectedIds.length > 1 && 's'} seleccionada{selectedIds.length > 1 && 's'}
-                        </span>
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="bg-transparent border-zinc-700 hover:bg-zinc-800 text-zinc-200 dark:border-zinc-300 dark:hover:bg-zinc-100 dark:text-zinc-800 h-8"
-                                onClick={handleBulkCancel}
-                                disabled={isUpdatingBulk || confirmAction !== null}
-                            >
-                                Cancelar Seleccionadas
-                            </Button>
-                            <Button
-                                size="sm"
-                                className="bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 h-8 border-none"
-                                onClick={handleBulkMarkServed}
-                                disabled={isUpdatingBulk || confirmAction !== null}
-                            >
-                                Marcar Servidas
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-zinc-400 hover:text-white rounded-full ml-2"
-                                onClick={() => setSelectedIds([])}
-                            >
-                                <X className="h-4 w-4" />
-                            </Button>
+                    {/* Sticky Action Menu for Batch Operations overlapping the modal */}
+                    {selectedIds.length > 0 && (
+                        <div id="sticky-batch-menu" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-zinc-900 dark:bg-white text-zinc-50 dark:text-zinc-900 px-6 py-3 rounded-full shadow-lg border border-zinc-800 dark:border-zinc-200 flex items-center justify-between gap-6 animate-in slide-in-from-bottom flex-wrap w-max">
+                            <span className="font-semibold text-sm">
+                                {selectedIds.length} reserva{selectedIds.length > 1 && 's'} seleccionada{selectedIds.length > 1 && 's'}
+                            </span>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="bg-transparent border-zinc-700 hover:bg-zinc-800 text-zinc-200 dark:border-zinc-300 dark:hover:bg-zinc-100 dark:text-zinc-800 h-8"
+                                    onClick={handleBulkCancel}
+                                    disabled={isUpdatingBulk || confirmAction !== null}
+                                >
+                                    Cancelar Seleccionadas
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    className="bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 h-8 border-none"
+                                    onClick={handleBulkMarkServed}
+                                    disabled={isUpdatingBulk || confirmAction !== null}
+                                >
+                                    Marcar Servidas
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-zinc-400 hover:text-white rounded-full ml-2"
+                                    onClick={() => setSelectedIds([])}
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
-                    </div>
-                )}
-            </Dialog>
+                    )}
 
-            <ConfirmationDialog
-                isOpen={confirmAction !== null}
-                onClose={() => setConfirmAction(null)}
-                onConfirm={executeConfirmAction}
-                title={confirmAction === 'served' ? "Marcar como servidas" : "Cancelar reservaciones"}
-                description={`¿Estás seguro que deseas ${confirmAction === 'served' ? 'marcar como servidas' : 'cancelar'} las ${selectedIds.length} reservaciones seleccionadas?`}
-                confirmText={confirmAction === 'served' ? "Sí, marcar servidas" : "Sí, cancelar"}
-                cancelText="Cerrar"
-                isDangerous={confirmAction === 'cancel'}
-                isLoading={isUpdatingBulk}
-            />
+                    <ConfirmationDialog
+                        isOpen={confirmAction !== null}
+                        onClose={() => setConfirmAction(null)}
+                        onConfirm={executeConfirmAction}
+                        title={confirmAction === 'served' ? "Marcar como servidas" : "Cancelar reservaciones"}
+                        description={`¿Estás seguro que deseas ${confirmAction === 'served' ? 'marcar como servidas' : 'cancelar'} las ${selectedIds.length} reservaciones seleccionadas?`}
+                        confirmText={confirmAction === 'served' ? "Sí, marcar servidas" : "Sí, cancelar"}
+                        cancelText="Cerrar"
+                        isDangerous={confirmAction === 'cancel'}
+                        isLoading={isUpdatingBulk}
+                    />
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
