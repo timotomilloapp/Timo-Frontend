@@ -1,8 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useReservationsByMenu, useReservationsBulkStatus } from '../hooks/useReservations';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Loader2, Users, Search, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Loader2, Users, Search, X, Download, FileSpreadsheet, FileText, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { es } from 'date-fns/locale';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { exportReservationsToXlsx, exportReservationsToCsv } from '@/lib/export-reservations';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface MenuReservationsDialogProps {
     menuId: string | null;
@@ -96,7 +102,7 @@ export function MenuReservationsDialog({ menuId, onClose }: MenuReservationsDial
         <>
             <Dialog open={!!menuId} onOpenChange={(open: boolean) => !open && onClose()}>
                 <DialogContent 
-                    className="sm:max-w-[800px] h-[85vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-zinc-950 border-transparent dark:border-zinc-800"
+                    className="sm:max-w-[800px] h-[85vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-zinc-950 border-transparent dark:border-zinc-800 [&_[data-slot=dialog-close]]:text-white [&_[data-slot=dialog-close]]:opacity-80 [&_[data-slot=dialog-close]:hover]:opacity-100 [&_[data-slot=dialog-close]:hover]:bg-white/10 [&_[data-slot=dialog-close]]:top-4 [&_[data-slot=dialog-close]]:right-4"
                     onInteractOutside={(e) => {
                         if (confirmAction !== null) {
                             e.preventDefault();
@@ -109,20 +115,53 @@ export function MenuReservationsDialog({ menuId, onClose }: MenuReservationsDial
                         }
                     }}
                 >
-                    <DialogHeader className="p-6 pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
-                        <DialogTitle className="flex items-center gap-2 text-xl">
-                            <Users className="h-5 w-5 text-zinc-900 dark:text-zinc-100" />
-                            Listado de Reservaciones
-                        </DialogTitle>
-                        <div className="flex items-center justify-between mt-2">
-                            <div className="text-sm text-zinc-500 dark:text-zinc-400">
-                                Total confirmadas: <strong className="text-zinc-900 dark:text-zinc-100">{totalConfirmed}</strong> de <strong className="text-zinc-900 dark:text-zinc-100">{reservations?.length || 0}</strong>
+                    <DialogHeader className="p-6 pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0 bg-zinc-900 dark:bg-zinc-950 rounded-t-xl">
+                        <div className="flex items-center justify-between pr-10">
+                            <DialogTitle className="flex items-center gap-2 text-xl text-white">
+                                <Users className="h-5 w-5 text-white/80" />
+                                Listado de Reservaciones
+                            </DialogTitle>
+                            {/* Export button — only shown when there's data */}
+                            {reservations && reservations.length > 0 && (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            size="sm"
+                                            className="gap-1.5 h-8 text-xs font-bold bg-white text-zinc-900 hover:bg-zinc-100 border-none shadow-sm"
+                                        >
+                                            <Download className="h-3.5 w-3.5" />
+                                            Exportar
+                                            <ChevronDown className="h-3 w-3 opacity-50" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-44">
+                                        <DropdownMenuItem
+                                            className="gap-2 cursor-pointer"
+                                            onClick={() => exportReservationsToXlsx(reservations, reservations[0]?.menu?.date)}
+                                        >
+                                            <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+                                            Exportar a Excel
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            className="gap-2 cursor-pointer"
+                                            onClick={() => exportReservationsToCsv(reservations, reservations[0]?.menu?.date)}
+                                        >
+                                            <FileText className="h-4 w-4 text-blue-500" />
+                                            Exportar a CSV
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            )}
+                        </div>
+                        <div className="flex items-center justify-between mt-3">
+                            <div className="text-sm text-white/70">
+                                Total confirmadas: <strong className="text-white">{totalConfirmed}</strong> de <strong className="text-white">{reservations?.length || 0}</strong>
                             </div>
                             <div className="relative w-64">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/40" />
                                 <Input
                                     placeholder="Buscar CC o Proteína..."
-                                    className="pl-9 h-9"
+                                    className="pl-9 h-9 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
@@ -155,9 +194,10 @@ export function MenuReservationsDialog({ menuId, onClose }: MenuReservationsDial
                                                     className="data-[state=checked]:bg-zinc-900 data-[state=checked]:border-zinc-900 dark:data-[state=checked]:bg-zinc-100 dark:data-[state=checked]:border-zinc-100 dark:data-[state=checked]:text-zinc-900"
                                                 />
                                             </th>
+                                            <th className="px-6 py-3 font-medium">Nombre</th>
                                             <th className="px-6 py-3 font-medium">Cédula (CC)</th>
                                             <th className="px-6 py-3 font-medium">Proteína</th>
-                                            <th className="px-6 py-3 font-medium text-right">Fecha Creación</th>
+                                            <th className="px-6 py-3 font-medium text-right">Fecha Reserva</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -186,6 +226,9 @@ export function MenuReservationsDialog({ menuId, onClose }: MenuReservationsDial
                                                             />
                                                         </td>
                                                         <td className="px-6 py-3 font-medium text-zinc-900 dark:text-zinc-100">
+                                                            {res.name || <span className="text-zinc-400 italic">—</span>}
+                                                        </td>
+                                                        <td className="px-6 py-3 font-medium text-zinc-700 dark:text-zinc-200">
                                                             {res.cc}
                                                         </td>
                                                         <td className="px-6 py-3 text-zinc-600 dark:text-zinc-300">
