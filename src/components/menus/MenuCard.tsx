@@ -257,11 +257,14 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                 const printableHtml = ticketHtml.replace(
                     '</body>',
                     `<script>
-                        window.onload = function() {
-                            setTimeout(function() {
-                                window.print();
-                                window.close();
-                            }, 400);
+                        // Esperar un momento para asegurar que el navegador renderice el DOM antes de capturarlo
+                        setTimeout(function() {
+                            window.print();
+                        }, 500);
+
+                        // Cerrar la ventana únicamente cuando se termine o cancele la impresión
+                        window.onafterprint = function() {
+                            window.close();
                         };
                     <\/script></body>`
                 );

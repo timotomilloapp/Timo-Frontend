@@ -38,7 +38,7 @@ export function ReservationsCalendarPage() {
             if (selectedDates.length === 0) return;
             const target = e.target as HTMLElement;
             // Ignorar clicks en modales/dialogs o tooltips para no interferir
-            if (target.closest('[role="dialog"]') || target.closest('[role="menu"]')) return;
+            if (target.closest('[role="dialog"]') || target.closest('[role="menu"]') || target.closest('[role="alertdialog"]')) return;
             // Ignorar clicks en botones o dentro de las tarjetas del calendario
             if (target.closest('button') || target.closest('.group.relative.h-full')) return;
 
@@ -80,9 +80,14 @@ export function ReservationsCalendarPage() {
         setConfirmAction('served');
     };
 
-    const handleBulkCancel = () => {
+    const handleBulkCancel = async () => {
         if (selectedDates.length === 0) return;
-        setConfirmAction('cancel');
+        try {
+            await Promise.all(selectedDates.map(date => bulkCancelled(date)));
+            setSelectedDates([]);
+        } catch (e) {
+             console.error(e);
+        }
     };
 
     const executeConfirmAction = async () => {
@@ -91,8 +96,6 @@ export function ReservationsCalendarPage() {
         try {
             if (confirmAction === 'served') {
                 await Promise.all(selectedDates.map(date => bulkServed(date)));
-            } else if (confirmAction === 'cancel') {
-                await Promise.all(selectedDates.map(date => bulkCancelled(date)));
             }
             setSelectedDates([]);
         } finally {
@@ -203,12 +206,11 @@ export function ReservationsCalendarPage() {
                 isOpen={confirmAction !== null}
                 onClose={() => setConfirmAction(null)}
                 onConfirm={executeConfirmAction}
-                title={confirmAction === 'served' ? "Marcar como servidas" : "Cancelar reservaciones en bloque"}
-                description={`¿Estás seguro que deseas ${confirmAction === 'served' ? 'marcar como servidas' : 'cancelar'} todas las reservaciones en los ${selectedDates.length} días seleccionados?`}
-                confirmText={confirmAction === 'served' ? "Sí, marcar servidas" : "Sí, cancelar"}
+                title="Marcar como servidas"
+                description={`¿Estás seguro que deseas marcar como servidas todas las reservaciones en los ${selectedDates.length} días seleccionados?`}
+                confirmText="Sí, marcar servidas"
                 cancelText="Cerrar"
-                isDangerous={confirmAction === 'cancel'}
-                isLoading={isCancellingBulk || isServingBulk}
+                isLoading={isServingBulk}
             />
         </div>
     );
