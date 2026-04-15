@@ -29,10 +29,20 @@ export function CrudFormDialog({
 
     useEffect(() => {
         if (isOpen) {
-            setFormData(initialData || config.defaultValues || {});
+            if (initialData) {
+                // Only pick the fields declared in formFields to avoid sending
+                // extra fields (id, createdAt, updatedAt...) that would cause a 400
+                const picked = config.formFields.reduce((acc: any, field) => {
+                    acc[field.name] = initialData[field.name] ?? (config.defaultValues as any)?.[field.name] ?? '';
+                    return acc;
+                }, {});
+                setFormData(picked);
+            } else {
+                setFormData(config.defaultValues || {});
+            }
             setErrors({});
         }
-    }, [isOpen, initialData, config.defaultValues]);
+    }, [isOpen, initialData, config.formFields, config.defaultValues]);
 
     if (!isOpen) return null;
 

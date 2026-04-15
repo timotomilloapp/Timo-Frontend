@@ -276,7 +276,8 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
             reservationService.markAsPrinted(reservationId).catch(err => console.error('Error marking as printed', err));
         }
 
-        // Cierra sesión y redirige, daremos 30 segundos para que el 
+        // Cierra sesión y redirige,
+        //  daremos 30 segundos para que el 
         // Android Print Spooler procese e imprima cómodamente el ticket.
         setTimeout(() => {
             authService.logout('/');
