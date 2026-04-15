@@ -230,23 +230,23 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                             <span className="text-xs font-normal text-zinc-500">Selecciona una o más</span>
                                         </label>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         {activeProteins.map(p => {
                                             const isSelected = selectedProteins.has(p.id);
                                             const isDefault = defaultProtein === p.id;
                                             return (
-                                                <div key={p.id} className={`flex items-start gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${isSelected ? 'border-zinc-900 dark:border-zinc-100 ring-1 ring-zinc-900/10 dark:ring-zinc-100/10' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'}`}>
+                                                <div key={p.id} className={`flex items-start gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${isSelected ? 'border-zinc-900 dark:border-zinc-100 ring-1 ring-zinc-900/10 dark:ring-zinc-100/10 bg-zinc-50 dark:bg-zinc-900/40' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'}`}>
                                                     <input
                                                         type="checkbox"
                                                         checked={isSelected}
                                                         onChange={() => handleToggleProtein(p.id)}
                                                         disabled={isLoading}
-                                                        className="mt-0.5 w-4 h-4 text-zinc-900 dark:text-zinc-100 rounded border-zinc-300 dark:border-zinc-600"
+                                                        className="mt-0.5 w-4 h-4 flex-shrink-0 text-zinc-900 dark:text-zinc-100 rounded border-zinc-300 dark:border-zinc-600"
                                                     />
-                                                    <div className="flex-1 flex flex-col items-start min-w-0">
-                                                        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 block truncate w-full" onClick={() => handleToggleProtein(p.id)}>{p.name}</span>
+                                                    <div className="flex-1 flex flex-col items-start">
+                                                        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-snug" onClick={() => handleToggleProtein(p.id)}>{p.name}</span>
                                                         {isSelected && (
-                                                            <label className="mt-1 flex items-center gap-1.5 cursor-pointer text-xs text-zinc-500" onClick={(e) => e.stopPropagation()}>
+                                                            <label className="mt-1.5 flex items-center gap-1.5 cursor-pointer text-xs text-zinc-500" onClick={(e) => e.stopPropagation()}>
                                                                 <input
                                                                     type="radio"
                                                                     name="defaultProtein"

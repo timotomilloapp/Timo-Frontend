@@ -12,9 +12,17 @@ interface CrudPageProps {
     config: CrudEntityConfig;
 }
 
+const PAGE_SIZE = 10;
+
 export function CrudPage({ config }: CrudPageProps) {
+    // Pagination state
+    const [page, setPage] = useState(0);
+
     // Queries & Mutations
-    const { data, isLoading } = useCrudList(config.endpoints.base);
+    const { data, isLoading } = useCrudList(config.endpoints.base, {
+        skip: page * PAGE_SIZE,
+        take: PAGE_SIZE,
+    });
     const createMut = useCrudCreate(config.endpoints.base);
     const updateMut = useCrudUpdate(config.endpoints.base);
     const toggleMut = useCrudToggle(config.endpoints.base);
@@ -47,8 +55,9 @@ export function CrudPage({ config }: CrudPageProps) {
                 // Update
                 await updateMut.mutateAsync({ id: editingItem.id, payload: formData });
             } else {
-                // Create
+                // Create — go back to first page so user sees the new item
                 await createMut.mutateAsync(formData);
+                setPage(0);
             }
             setIsFormOpen(false);
         } catch (err) {
@@ -136,6 +145,12 @@ export function CrudPage({ config }: CrudPageProps) {
                 data={data || []}
                 columns={tableColumns}
                 isLoading={isLoading}
+                pagination={{
+                    page,
+                    pageSize: PAGE_SIZE,
+                    onPageChange: setPage,
+                    hasMore: (data?.length ?? 0) >= PAGE_SIZE,
+                }}
             />
 
             <CrudFormDialog

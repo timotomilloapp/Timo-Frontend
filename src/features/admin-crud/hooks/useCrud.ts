@@ -11,11 +11,20 @@ import { apiClient } from '@/services/api-client';
  * DELETE /api/v1/{resource}/{id}
  */
 
-export function useCrudList<T>(resource: string) {
+interface PaginatedParams {
+    skip?: number;
+    take?: number;
+    [key: string]: any;
+}
+
+export function useCrudList<T>(resource: string, params?: PaginatedParams) {
+    const { skip = 0, take = 10, ...rest } = params ?? {};
     return useQuery({
-        queryKey: [resource],
+        queryKey: [resource, skip, take, rest],
         queryFn: async () => {
-            const { data } = await apiClient.get<T[]>(`${resource}`);
+            const { data } = await apiClient.get<T[]>(`${resource}`, {
+                params: { skip, take, ...rest },
+            });
             return data;
         },
     });
