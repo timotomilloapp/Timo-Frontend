@@ -8,7 +8,7 @@ import { MonthCalendarHeader } from './MonthCalendarHeader';
 import { MenuCalendarCard } from './MenuCalendarCard';
 import { MenuCreateDialog } from '../MenuCreateDialog';
 import { MenuDetailsDialog } from '../MenuDetailsDialog';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { MenuResponse, useMenuDelete, useMenuClone } from '../../hooks/useMenus';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -43,6 +43,7 @@ export function MenusCalendarPage() {
     }, {} as Record<string, any>);
 
     const handleCreateClick = (date: Date) => {
+        if (date.getDay() === 0) return;
         setCreationDate(date);
     };
 
@@ -70,6 +71,10 @@ export function MenusCalendarPage() {
 
     const handleCloneConfirm = async () => {
         if (!menuToClone || !cloneTargetDate) return;
+        if (new Date(`${cloneTargetDate}T00:00:00`).getDay() === 0) {
+            setCloneError('Los domingos no están disponibles para crear menús.');
+            return;
+        }
         setCloneError('');
         try {
             await cloneMenuFn({ id: menuToClone.id, date: cloneTargetDate });
@@ -186,7 +191,15 @@ export function MenusCalendarPage() {
                                 type="date"
                                 className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 dark:[color-scheme:dark]"
                                 value={cloneTargetDate}
-                                onChange={(e) => setCloneTargetDate(e.target.value)}
+                                onChange={(e) => {
+                                    const nextDate = e.target.value;
+                                    setCloneTargetDate(nextDate);
+                                    if (nextDate && new Date(`${nextDate}T00:00:00`).getDay() === 0) {
+                                        setCloneError('Los domingos no están disponibles para crear menús.');
+                                    } else if (cloneError === 'Los domingos no están disponibles para crear menús.') {
+                                        setCloneError('');
+                                    }
+                                }}
                             />
                             <p className="text-xs text-zinc-500">
                                 Las proteínas, acompañantes, sopa y jugo se copiarán a este nuevo día.
@@ -204,7 +217,7 @@ export function MenusCalendarPage() {
                         <Button variant="outline" onClick={() => { setMenuToClone(null); setCloneError(''); }} disabled={isCloning} className="bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900">
                             Cancelar
                         </Button>
-                        <Button onClick={handleCloneConfirm} disabled={!cloneTargetDate || isCloning} className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 border-none px-6">
+                        <Button onClick={handleCloneConfirm} disabled={!cloneTargetDate || isCloning || new Date(`${cloneTargetDate}T00:00:00`).getDay() === 0} className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 border-none px-6">
                             {isCloning ? 'Clonando...' : 'Confirmar'}
                         </Button>
                     </DialogFooter>
