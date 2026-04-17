@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, X, Layers, AlertCircle, Pencil } from 'lucide-react';
+import { Plus, X, AlertCircle, Pencil, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCrudList } from '@/features/admin-crud/hooks/useCrud';
 import { useMenuCreate, useMenuUpdate } from '../hooks/useMenus';
 
@@ -18,6 +18,7 @@ interface MenuCreateDialogProps {
 }
 
 export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate, editMenu }: MenuCreateDialogProps) {
+    const PROTEINS_PER_PAGE = 6;
     const [isOpenInternal, setIsOpenInternal] = useState(false);
     const isOpen = forceOpen !== undefined ? forceOpen : isOpenInternal;
     const isEditing = !!editMenu;
@@ -33,6 +34,8 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
     const [selectedProteins, setSelectedProteins] = useState<Set<string>>(new Set());
     const [defaultProtein, setDefaultProtein] = useState<string>('');
     const [selectedSides, setSelectedSides] = useState<Set<string>>(new Set());
+    const [proteinSearch, setProteinSearch] = useState('');
+    const [proteinPage, setProteinPage] = useState(1);
     const [error, setError] = useState('');
 
     React.useEffect(() => {
@@ -43,6 +46,8 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
             setDefaultProtein(editMenu.defaultProteinType?.id || '');
             setSelectedProteins(new Set((editMenu.proteinOptions || []).map((po: any) => po.proteinTypeId || po.proteinType?.id)));
             setSelectedSides(new Set((editMenu.sideOptions || []).map((so: any) => so.sideDishId || so.sideDish?.id)));
+            setProteinSearch('');
+            setProteinPage(1);
         } else if (isOpen && !editMenu) {
             // Reset to defaults
             setDate(defaultDate ? defaultDate.toISOString().split('T')[0] : '');
@@ -51,21 +56,48 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
             setDefaultProtein('');
             setSelectedProteins(new Set());
             setSelectedSides(new Set());
+            setProteinSearch('');
+            setProteinPage(1);
             setError('');
         }
     }, [isOpen, editMenu, defaultDate]);
 
     // Fetch Data
-    const { data: soups = [], isLoading: isLoadingSoups } = useCrudList<CrudItem>('/soups');
-    const { data: drinks = [], isLoading: isLoadingDrinks } = useCrudList<CrudItem>('/drinks');
+    const { isLoading: isLoadingSoups } = useCrudList<CrudItem>('/soups');
+    const { isLoading: isLoadingDrinks } = useCrudList<CrudItem>('/drinks');
     const { data: proteins = [], isLoading: isLoadingProteins } = useCrudList<CrudItem>('/proteins');
-    const { data: sides = [], isLoading: isLoadingSides } = useCrudList<CrudItem>('/side-dishes');
+    const { isLoading: isLoadingSides } = useCrudList<CrudItem>('/side-dishes');
 
     // Filter Active only
-    const activeSoups = useMemo(() => soups.filter(s => s.isActive), [soups]);
-    const activeDrinks = useMemo(() => drinks.filter(d => d.isActive), [drinks]);
     const activeProteins = useMemo(() => proteins.filter(p => p.isActive), [proteins]);
-    const activeSides = useMemo(() => sides.filter(s => s.isActive), [sides]);
+    const filteredProteins = useMemo(() => {
+        const normalizedSearch = proteinSearch.trim().toLowerCase();
+        if (!normalizedSearch) return activeProteins;
+        return activeProteins.filter((protein) => protein.name.toLowerCase().includes(normalizedSearch));
+    }, [activeProteins, proteinSearch]);
+    const totalProteinPages = Math.max(1, Math.ceil(filteredProteins.length / PROTEINS_PER_PAGE));
+    const visibleProteins = useMemo(() => {
+        const startIndex = (proteinPage - 1) * PROTEINS_PER_PAGE;
+        return filteredProteins.slice(startIndex, startIndex + PROTEINS_PER_PAGE);
+    }, [filteredProteins, proteinPage]);
+
+    React.useEffect(() => {
+        setProteinPage(1);
+    }, [proteinSearch]);
+
+    React.useEffect(() => {
+        if (proteinPage > totalProteinPages) {
+            setProteinPage(totalProteinPages);
+        }
+    }, [proteinPage, totalProteinPages]);
+
+    const { mutateAsync: createMenu, isPending: isCreating } = useMenuCreate();
+    const { mutateAsync: updateMenu, isPending: isUpdating } = useMenuUpdate();
+
+    const isSundayDate = (value: string) => {
+        if (!value) return false;
+        return new Date(`${value}T00:00:00`).getDay() === 0;
+    };
 
     if (!isOpen) {
         if (date) setDate('');
@@ -74,6 +106,8 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
         if (selectedProteins.size > 0) setSelectedProteins(new Set());
         if (defaultProtein) setDefaultProtein('');
         if (selectedSides.size > 0) setSelectedSides(new Set());
+        if (proteinSearch) setProteinSearch('');
+        if (proteinPage !== 1) setProteinPage(1);
         if (error) setError('');
         return null;
     }
@@ -113,25 +147,14 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
         }
     };
 
-    const handleToggleSide = (id: string) => {
-        setSelectedSides(toggleSet(selectedSides, id)); // No max limit
-    };
-
-    const handleSelectSoup = (id: string) => {
-        setSelectedSoup(prev => prev === id ? '' : id); // Toggle or switch
-    };
-
-    const handleSelectDrink = (id: string) => {
-        setSelectedDrink(prev => prev === id ? '' : id); // Toggle or switch
-    };
-
-    const { mutateAsync: createMenu, isPending: isCreating } = useMenuCreate();
-    const { mutateAsync: updateMenu, isPending: isUpdating } = useMenuUpdate();
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!date) {
             setError('Por favor selecciona una fecha.');
+            return;
+        }
+        if (isSundayDate(date)) {
+            setError('Los domingos no están disponibles para crear menús.');
             return;
         }
         if (selectedProteins.size === 0) {
@@ -215,11 +238,20 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                         type="date"
                                         value={date}
                                         min={new Date().toLocaleDateString('en-CA')} // Formato YYYY-MM-DD local
-                                        onChange={(e) => setDate(e.target.value)}
+                                        onChange={(e) => {
+                                            const nextDate = e.target.value;
+                                            setDate(nextDate);
+                                            if (isSundayDate(nextDate)) {
+                                                setError('Los domingos no están disponibles para crear menús.');
+                                            } else if (error === 'Los domingos no están disponibles para crear menús.') {
+                                                setError('');
+                                            }
+                                        }}
                                         disabled={isLoading}
                                         required
                                         className="w-full sm:w-1/2 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500 transition-colors disabled:opacity-50"
                                     />
+                                    <p className="text-xs text-zinc-500">Los domingos están bloqueados para la creación de menús.</p>
                                 </div>
 
                                 {/* Proteins */}
@@ -230,8 +262,49 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                             <span className="text-xs font-normal text-zinc-500">Selecciona una o más</span>
                                         </label>
                                     </div>
+                                    <div className="flex flex-col gap-3">
+                                        <div className="relative">
+                                            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                                            <input
+                                                type="text"
+                                                value={proteinSearch}
+                                                onChange={(e) => setProteinSearch(e.target.value)}
+                                                placeholder="Buscar proteína..."
+                                                disabled={isLoading}
+                                                className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-between text-xs text-zinc-500">
+                                            <span>
+                                                {filteredProteins.length === 0
+                                                    ? 'Sin resultados'
+                                                    : `Mostrando ${visibleProteins.length} de ${filteredProteins.length} proteínas`}
+                                            </span>
+                                            {filteredProteins.length > PROTEINS_PER_PAGE && (
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setProteinPage((current) => Math.max(1, current - 1))}
+                                                        disabled={proteinPage === 1 || isLoading}
+                                                        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                                                    >
+                                                        <ChevronLeft size={14} />
+                                                    </button>
+                                                    <span>Página {proteinPage} de {totalProteinPages}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setProteinPage((current) => Math.min(totalProteinPages, current + 1))}
+                                                        disabled={proteinPage === totalProteinPages || isLoading}
+                                                        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                                                    >
+                                                        <ChevronRight size={14} />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                        {activeProteins.map(p => {
+                                        {visibleProteins.map(p => {
                                             const isSelected = selectedProteins.has(p.id);
                                             const isDefault = defaultProtein === p.id;
                                             return (
