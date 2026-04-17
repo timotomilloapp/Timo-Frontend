@@ -29,7 +29,8 @@ export function MenuCalendarCard({
     onDeleteMenu,
 }: MenuCalendarCardProps) {
     const isPastDate = isPast(date) && !isToday(date);
-    const isSunday = date.getDay() === 0;
+    const dayOfWeek = date.getDay();
+    const isNonServiceDay = dayOfWeek === 0 || dayOfWeek === 6;
     const dateNumber = format(date, 'd');
     const isCurrentMonth = isSameMonth(date, currentMonth);
 
@@ -39,7 +40,7 @@ export function MenuCalendarCard({
             <div className={cn(
                 "group relative h-full min-h-[100px] w-full p-2 flex flex-col transition-colors border border-transparent",
                 isCurrentMonth ? "bg-white dark:bg-zinc-950" : "bg-zinc-50/50 dark:bg-zinc-900/20 text-zinc-400 dark:text-zinc-600",
-                isSunday ? "bg-zinc-100/80 dark:bg-zinc-900/60" : "hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+                isNonServiceDay ? "bg-zinc-100/80 dark:bg-zinc-900/60" : "hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
             )}>
                 <span className={cn(
                     "text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full",
@@ -48,7 +49,7 @@ export function MenuCalendarCard({
                     {dateNumber}
                 </span>
 
-                {isSunday ? (
+                {isNonServiceDay ? (
                     <div className="mt-auto rounded-md border border-dashed border-zinc-200 px-2 py-1.5 text-[11px] text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
                         Día sin servicio
                     </div>
