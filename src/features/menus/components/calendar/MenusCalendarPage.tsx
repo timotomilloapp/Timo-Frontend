@@ -34,6 +34,12 @@ export function MenusCalendarPage() {
     const [cloneTargetDate, setCloneTargetDate] = useState<string>('');
     const [cloneError, setCloneError] = useState<string>('');
 
+    const isNonServiceDate = (value: Date | string) => {
+        const date = value instanceof Date ? value : new Date(`${value}T00:00:00`);
+        const weekDay = date.getDay();
+        return weekDay === 0 || weekDay === 6;
+    };
+
     // Mapear menús por fecha para acceso O(1)
     const menusByDate = (menus || []).reduce((acc, menu) => {
         // Asumiendo que menu.date viene como ISO string, extraemos sólo YYYY-MM-DD
@@ -43,7 +49,7 @@ export function MenusCalendarPage() {
     }, {} as Record<string, any>);
 
     const handleCreateClick = (date: Date) => {
-        if (date.getDay() === 0) return;
+        if (isNonServiceDate(date)) return;
         setCreationDate(date);
     };
 
@@ -71,8 +77,8 @@ export function MenusCalendarPage() {
 
     const handleCloneConfirm = async () => {
         if (!menuToClone || !cloneTargetDate) return;
-        if (new Date(`${cloneTargetDate}T00:00:00`).getDay() === 0) {
-            setCloneError('Los domingos no están disponibles para crear menús.');
+        if (isNonServiceDate(cloneTargetDate)) {
+            setCloneError('Sabados y domingos no estan disponibles para crear menus.');
             return;
         }
         setCloneError('');
@@ -194,9 +200,9 @@ export function MenusCalendarPage() {
                                 onChange={(e) => {
                                     const nextDate = e.target.value;
                                     setCloneTargetDate(nextDate);
-                                    if (nextDate && new Date(`${nextDate}T00:00:00`).getDay() === 0) {
-                                        setCloneError('Los domingos no están disponibles para crear menús.');
-                                    } else if (cloneError === 'Los domingos no están disponibles para crear menús.') {
+                                    if (nextDate && isNonServiceDate(nextDate)) {
+                                        setCloneError('Sabados y domingos no estan disponibles para crear menus.');
+                                    } else if (cloneError === 'Sabados y domingos no estan disponibles para crear menus.') {
                                         setCloneError('');
                                     }
                                 }}
@@ -217,7 +223,7 @@ export function MenusCalendarPage() {
                         <Button variant="outline" onClick={() => { setMenuToClone(null); setCloneError(''); }} disabled={isCloning} className="bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900">
                             Cancelar
                         </Button>
-                        <Button onClick={handleCloneConfirm} disabled={!cloneTargetDate || isCloning || new Date(`${cloneTargetDate}T00:00:00`).getDay() === 0} className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 border-none px-6">
+                        <Button onClick={handleCloneConfirm} disabled={!cloneTargetDate || isCloning || isNonServiceDate(cloneTargetDate)} className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 border-none px-6">
                             {isCloning ? 'Clonando...' : 'Confirmar'}
                         </Button>
                     </DialogFooter>

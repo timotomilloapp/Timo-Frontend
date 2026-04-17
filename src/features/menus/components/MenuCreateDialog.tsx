@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Plus, X, AlertCircle, Pencil, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCrudList } from '@/features/admin-crud/hooks/useCrud';
+import { apiClient } from '@/services/api-client';
 import { useMenuCreate, useMenuUpdate } from '../hooks/useMenus';
 
 interface CrudItem {
@@ -63,13 +65,22 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
     }, [isOpen, editMenu, defaultDate]);
 
     // Fetch Data
-    const { isLoading: isLoadingSoups } = useCrudList<CrudItem>('/soups');
-    const { isLoading: isLoadingDrinks } = useCrudList<CrudItem>('/drinks');
-    const { data: proteins = [], isLoading: isLoadingProteins } = useCrudList<CrudItem>('/proteins');
-    const { isLoading: isLoadingSides } = useCrudList<CrudItem>('/side-dishes');
+    const { data: soups = [], isLoading: isLoadingSoups } = useCrudList<CrudItem>('/soups', { active: true, take: 200 });
+    const { data: drinks = [], isLoading: isLoadingDrinks } = useCrudList<CrudItem>('/drinks', { active: true, take: 200 });
+    const { data: proteins = [], isLoading: isLoadingProteins } = useQuery({
+        queryKey: ['proteins', 'active', 'all'],
+        queryFn: async () => {
+            const { data } = await apiClient.get<CrudItem[]>('/proteins/active/all');
+            return data;
+        },
+    });
+    const { data: sides = [], isLoading: isLoadingSides } = useCrudList<CrudItem>('/side-dishes', { active: true, take: 200 });
 
     // Filter Active only
+    const activeSoups = useMemo(() => soups.filter(s => s.isActive), [soups]);
+    const activeDrinks = useMemo(() => drinks.filter(d => d.isActive), [drinks]);
     const activeProteins = useMemo(() => proteins.filter(p => p.isActive), [proteins]);
+    const activeSides = useMemo(() => sides.filter(s => s.isActive), [sides]);
     const filteredProteins = useMemo(() => {
         const normalizedSearch = proteinSearch.trim().toLowerCase();
         if (!normalizedSearch) return activeProteins;
@@ -94,9 +105,10 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
     const { mutateAsync: createMenu, isPending: isCreating } = useMenuCreate();
     const { mutateAsync: updateMenu, isPending: isUpdating } = useMenuUpdate();
 
-    const isSundayDate = (value: string) => {
+    const isNonServiceDate = (value: string) => {
         if (!value) return false;
-        return new Date(`${value}T00:00:00`).getDay() === 0;
+        const weekDay = new Date(`${value}T00:00:00`).getDay();
+        return weekDay === 0 || weekDay === 6;
     };
 
     if (!isOpen) {
@@ -120,11 +132,8 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
             next.delete(id);
         } else {
             if (max && next.size >= max) {
-                // Automatically replace the first element implicitly or block
-                // Block strategy is easier to manage to avoid accidental overwrites, 
-                // but user requested: "se podrá unicamente seleccionar uno, por lo que si ya tienes uno seleccioando y seleccionas otro se cambiará a este, y lo mismo para acompañantes, serán 2 máximo y tendrá el mismo funcionamiento"
                 const arr = Array.from(next);
-                next.delete(arr[0]); // Remove oldest element
+                next.delete(arr[0]);
                 next.add(id);
             } else {
                 next.add(id);
@@ -134,17 +143,26 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
     };
 
     const handleToggleProtein = (id: string) => {
-        // Proteins have no max limit, user selects N proteins
         const next = toggleSet(selectedProteins, id);
         setSelectedProteins(next);
 
-        // Auto-select as default if it's the first one
         if (next.size === 1 && !defaultProtein) {
             setDefaultProtein(id);
         } else if (!next.has(defaultProtein)) {
-            // If default protein was unselected, clear default or pick another
             setDefaultProtein(next.size > 0 ? Array.from(next)[0] : '');
         }
+    };
+
+    const handleToggleSide = (id: string) => {
+        setSelectedSides(toggleSet(selectedSides, id));
+    };
+
+    const handleSelectSoup = (id: string) => {
+        setSelectedSoup(prev => prev === id ? '' : id);
+    };
+
+    const handleSelectDrink = (id: string) => {
+        setSelectedDrink(prev => prev === id ? '' : id);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -153,16 +171,16 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
             setError('Por favor selecciona una fecha.');
             return;
         }
-        if (isSundayDate(date)) {
-            setError('Los domingos no están disponibles para crear menús.');
+        if (isNonServiceDate(date)) {
+            setError('Sbados y domingos no estn disponibles para crear mens.');
             return;
         }
         if (selectedProteins.size === 0) {
-            setError('Selecciona al menos una proteína.');
+            setError('Selecciona al menos una protena.');
             return;
         }
         if (!defaultProtein) {
-            setError('Asegúrate de tener una proteína por defecto.');
+            setError('Asegrate de tener una protena por defecto.');
             return;
         }
 
@@ -183,7 +201,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
             }
             handleClose();
         } catch (err: any) {
-            setError(err?.response?.data?.message || 'Error al procesar el menú.');
+            setError(err?.response?.data?.message || 'Error al procesar el men.');
         }
     };
 
@@ -203,8 +221,8 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                 {isEditing ? <Pencil size={20} /> : <Plus size={20} />}
                             </div>
                             <div>
-                                <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{isEditing ? 'Editar Menú' : 'Crear Nuevo Menú'}</h2>
-                                <p className="text-xs text-zinc-500">{isEditing ? 'Modifica los componentes del menú' : 'Configura los componentes para la carta'}</p>
+                                <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{isEditing ? 'Editar Men' : 'Crear Nuevo Men'}</h2>
+                                <p className="text-xs text-zinc-500">{isEditing ? 'Modifica los componentes del men' : 'Configura los componentes para la carta'}</p>
                             </div>
                         </div>
                         {!isLoading && (
@@ -217,7 +235,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                     {isDataLoading ? (
                         <div className="p-12 text-center text-zinc-500 flex-1 flex flex-col items-center justify-center">
                             <div className="w-6 h-6 border-2 border-zinc-300 border-t-zinc-600 rounded-full animate-spin mx-auto mb-4" />
-                            <p>Cargando catálogo...</p>
+                            <p>Cargando catlogo...</p>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
@@ -229,21 +247,20 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                     </div>
                                 )}
 
-                                {/* Date */}
                                 <div className="space-y-3">
                                     <label className="text-sm font-bold text-zinc-900 dark:text-zinc-100 border-b border-zinc-100 dark:border-zinc-800 pb-2 flex block">
-                                        Fecha del Menú *
+                                        Fecha del Men *
                                     </label>
                                     <input
                                         type="date"
                                         value={date}
-                                        min={new Date().toLocaleDateString('en-CA')} // Formato YYYY-MM-DD local
+                                        min={new Date().toLocaleDateString('en-CA')}
                                         onChange={(e) => {
                                             const nextDate = e.target.value;
                                             setDate(nextDate);
-                                            if (isSundayDate(nextDate)) {
-                                                setError('Los domingos no están disponibles para crear menús.');
-                                            } else if (error === 'Los domingos no están disponibles para crear menús.') {
+                                            if (isNonServiceDate(nextDate)) {
+                                                setError('Sbados y domingos no estn disponibles para crear mens.');
+                                            } else if (error === 'Sbados y domingos no estn disponibles para crear mens.') {
                                                 setError('');
                                             }
                                         }}
@@ -251,15 +268,14 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                         required
                                         className="w-full sm:w-1/2 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500 transition-colors disabled:opacity-50"
                                     />
-                                    <p className="text-xs text-zinc-500">Los domingos están bloqueados para la creación de menús.</p>
+                                    <p className="text-xs text-zinc-500">Sbados y domingos estn bloqueados para la creacin de mens.</p>
                                 </div>
 
-                                {/* Proteins */}
                                 <div className="space-y-3">
                                     <div className="border-b border-zinc-100 dark:border-zinc-800 pb-2">
                                         <label className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-                                            <span>Proteínas <span className="text-[#3b6154] dark:text-[#528775]">*</span></span>
-                                            <span className="text-xs font-normal text-zinc-500">Selecciona una o más</span>
+                                            <span>Protenas <span className="text-[#3b6154] dark:text-[#528775]">*</span></span>
+                                            <span className="text-xs font-normal text-zinc-500">Selecciona una o ms</span>
                                         </label>
                                     </div>
                                     <div className="flex flex-col gap-3">
@@ -269,7 +285,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                                 type="text"
                                                 value={proteinSearch}
                                                 onChange={(e) => setProteinSearch(e.target.value)}
-                                                placeholder="Buscar proteína..."
+                                                placeholder="Buscar protena..."
                                                 disabled={isLoading}
                                                 className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
                                             />
@@ -278,7 +294,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                             <span>
                                                 {filteredProteins.length === 0
                                                     ? 'Sin resultados'
-                                                    : `Mostrando ${visibleProteins.length} de ${filteredProteins.length} proteínas`}
+                                                    : `Mostrando ${visibleProteins.length} de ${filteredProteins.length} protenas`}
                                             </span>
                                             {filteredProteins.length > PROTEINS_PER_PAGE && (
                                                 <div className="flex items-center gap-2">
@@ -290,7 +306,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                                     >
                                                         <ChevronLeft size={14} />
                                                     </button>
-                                                    <span>Página {proteinPage} de {totalProteinPages}</span>
+                                                    <span>Pgina {proteinPage} de {totalProteinPages}</span>
                                                     <button
                                                         type="button"
                                                         onClick={() => setProteinPage((current) => Math.min(totalProteinPages, current + 1))}
@@ -336,81 +352,8 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                             )
                                         })}
                                     </div>
-                                    {activeProteins.length === 0 && <p className="text-sm text-zinc-400 italic">No hay proteínas activas creadas.</p>}
+                                    {activeProteins.length === 0 && <p className="text-sm text-zinc-400 italic">No hay protenas activas creadas.</p>}
                                 </div>
-
-                                {/* Sides - Desactivado visualmente
-                                <div className="space-y-3">
-                                    <div className="border-b border-zinc-100 dark:border-zinc-800 pb-2">
-                                        <label className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-                                            Acompañamientos
-                                            <span className="text-xs font-normal text-zinc-500">Selecciona uno o más</span>
-                                        </label>
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                                        {activeSides.map(s => {
-                                            const isSelected = selectedSides.has(s.id);
-                                            return (
-                                                <div key={s.id} onClick={() => !isLoading && handleToggleSide(s.id)} className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${isSelected ? 'border-zinc-900 dark:border-zinc-100 ring-1 ring-zinc-900/10 dark:ring-zinc-100/10' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'}`}>
-                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-zinc-900 bg-zinc-900 dark:border-zinc-100 dark:bg-zinc-100' : 'border-zinc-300 dark:border-zinc-600'}`}>
-                                                        {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-900" />}
-                                                    </div>
-                                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">{s.name}</span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                                */}
-
-                                {/* Soups - Desactivado visualmente
-                                <div className="space-y-3">
-                                    <div className="border-b border-zinc-100 dark:border-zinc-800 pb-2">
-                                        <label className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-                                            Sopa
-                                            <span className="text-xs font-normal text-zinc-500">Máximo 1</span>
-                                        </label>
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                                        {activeSoups.map(s => {
-                                            const isSelected = selectedSoup === s.id;
-                                            return (
-                                                <div key={s.id} onClick={() => !isLoading && handleSelectSoup(s.id)} className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${isSelected ? 'border-zinc-900 dark:border-zinc-100 ring-1 ring-zinc-900/10 dark:ring-zinc-100/10' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'}`}>
-                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-zinc-900 bg-zinc-900 dark:border-zinc-100 dark:bg-zinc-100' : 'border-zinc-300 dark:border-zinc-600'}`}>
-                                                        {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-900" />}
-                                                    </div>
-                                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">{s.name}</span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                                */}
-
-                                {/* Drinks - Desactivado visualmente
-                                <div className="space-y-3">
-                                    <div className="border-b border-zinc-100 dark:border-zinc-800 pb-2">
-                                        <label className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-                                            Bebida
-                                            <span className="text-xs font-normal text-zinc-500">Máximo 1</span>
-                                        </label>
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                                        {activeDrinks.map(d => {
-                                            const isSelected = selectedDrink === d.id;
-                                            return (
-                                                <div key={d.id} onClick={() => !isLoading && handleSelectDrink(d.id)} className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${isSelected ? 'border-zinc-900 dark:border-zinc-100 ring-1 ring-zinc-900/10 dark:ring-zinc-100/10' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50'}`}>
-                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-zinc-900 bg-zinc-900 dark:border-zinc-100 dark:bg-zinc-100' : 'border-zinc-300 dark:border-zinc-600'}`}>
-                                                        {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-900" />}
-                                                    </div>
-                                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">{d.name}</span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                                */}
-
                             </div>
 
                             <div className="flex-shrink-0 p-4 sm:p-6 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/20 text-right sm:rounded-b-xl flex justify-end gap-3 z-10">
@@ -428,7 +371,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                     className="px-4 sm:px-6 py-2 text-sm font-bold bg-[#3b6154] hover:bg-[#2b473e] text-white rounded-lg transition-colors flex items-center gap-2 shadow-sm"
                                 >
                                     {isLoading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-                                    {isEditing ? 'Guardar Cambios' : 'Crear Menú'}
+                                    {isEditing ? 'Guardar Cambios' : 'Crear Men'}
                                 </button>
                             </div>
                         </form>
