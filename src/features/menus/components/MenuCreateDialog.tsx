@@ -172,15 +172,15 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
             return;
         }
         if (isNonServiceDate(date)) {
-            setError('Sbados y domingos no estn disponibles para crear mens.');
+            setError('Sábados y domingos no están disponibles para crear menús.');
             return;
         }
         if (selectedProteins.size === 0) {
-            setError('Selecciona al menos una protena.');
+            setError('Selecciona al menos una proteína.');
             return;
         }
         if (!defaultProtein) {
-            setError('Asegrate de tener una protena por defecto.');
+            setError('Asegúrate de tener una proteína por defecto.');
             return;
         }
 
@@ -201,7 +201,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
             }
             handleClose();
         } catch (err: any) {
-            setError(err?.response?.data?.message || 'Error al procesar el men.');
+            setError(err?.response?.data?.message || 'Error al procesar el menú.');
         }
     };
 
@@ -221,8 +221,8 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                 {isEditing ? <Pencil size={20} /> : <Plus size={20} />}
                             </div>
                             <div>
-                                <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{isEditing ? 'Editar Men' : 'Crear Nuevo Men'}</h2>
-                                <p className="text-xs text-zinc-500">{isEditing ? 'Modifica los componentes del men' : 'Configura los componentes para la carta'}</p>
+                                <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{isEditing ? 'Editar Menú' : 'Crear Nuevo Menú'}</h2>
+                                <p className="text-xs text-zinc-500">{isEditing ? 'Modifica los componentes del menú' : 'Configura los componentes para la carta'}</p>
                             </div>
                         </div>
                         {!isLoading && (
@@ -235,7 +235,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                     {isDataLoading ? (
                         <div className="p-12 text-center text-zinc-500 flex-1 flex flex-col items-center justify-center">
                             <div className="w-6 h-6 border-2 border-zinc-300 border-t-zinc-600 rounded-full animate-spin mx-auto mb-4" />
-                            <p>Cargando catlogo...</p>
+                            <p>Cargando catálogo...</p>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
@@ -249,7 +249,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
 
                                 <div className="space-y-3">
                                     <label className="text-sm font-bold text-zinc-900 dark:text-zinc-100 border-b border-zinc-100 dark:border-zinc-800 pb-2 flex block">
-                                        Fecha del Men *
+                                        Fecha del Menú *
                                     </label>
                                     <input
                                         type="date"
@@ -259,8 +259,8 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                             const nextDate = e.target.value;
                                             setDate(nextDate);
                                             if (isNonServiceDate(nextDate)) {
-                                                setError('Sbados y domingos no estn disponibles para crear mens.');
-                                            } else if (error === 'Sbados y domingos no estn disponibles para crear mens.') {
+                                                setError('Sábados y domingos no están disponibles para crear menús.');
+                                            } else if (error === 'Sábados y domingos no están disponibles para crear menús.') {
                                                 setError('');
                                             }
                                         }}
@@ -268,14 +268,14 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                         required
                                         className="w-full sm:w-1/2 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500 transition-colors disabled:opacity-50"
                                     />
-                                    <p className="text-xs text-zinc-500">Sbados y domingos estn bloqueados para la creacin de mens.</p>
+                                    <p className="text-xs text-zinc-500">Sábados y domingos están bloqueados para la creación de menús.</p>
                                 </div>
 
                                 <div className="space-y-3">
                                     <div className="border-b border-zinc-100 dark:border-zinc-800 pb-2">
                                         <label className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-                                            <span>Protenas <span className="text-[#3b6154] dark:text-[#528775]">*</span></span>
-                                            <span className="text-xs font-normal text-zinc-500">Selecciona una o ms</span>
+                                            <span>Proteínas <span className="text-[#3b6154] dark:text-[#528775]">*</span></span>
+                                            <span className="text-xs font-normal text-zinc-500">Selecciona una o más</span>
                                         </label>
                                     </div>
                                     <div className="flex flex-col gap-3">
@@ -285,7 +285,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                                 type="text"
                                                 value={proteinSearch}
                                                 onChange={(e) => setProteinSearch(e.target.value)}
-                                                placeholder="Buscar protena..."
+                                                placeholder="Buscar proteína..."
                                                 disabled={isLoading}
                                                 className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:ring-2 focus:ring-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
                                             />
@@ -294,7 +294,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                             <span>
                                                 {filteredProteins.length === 0
                                                     ? 'Sin resultados'
-                                                    : `Mostrando ${visibleProteins.length} de ${filteredProteins.length} protenas`}
+                                                    : `Mostrando ${visibleProteins.length} de ${filteredProteins.length} proteínas`}
                                             </span>
                                             {filteredProteins.length > PROTEINS_PER_PAGE && (
                                                 <div className="flex items-center gap-2">
@@ -306,7 +306,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                                     >
                                                         <ChevronLeft size={14} />
                                                     </button>
-                                                    <span>Pgina {proteinPage} de {totalProteinPages}</span>
+                                                    <span>Página {proteinPage} de {totalProteinPages}</span>
                                                     <button
                                                         type="button"
                                                         onClick={() => setProteinPage((current) => Math.min(totalProteinPages, current + 1))}
@@ -352,7 +352,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                             )
                                         })}
                                     </div>
-                                    {activeProteins.length === 0 && <p className="text-sm text-zinc-400 italic">No hay protenas activas creadas.</p>}
+                                    {activeProteins.length === 0 && <p className="text-sm text-zinc-400 italic">No hay proteínas activas creadas.</p>}
                                 </div>
                             </div>
 
@@ -371,7 +371,7 @@ export function MenuCreateDialog({ trigger, forceOpen, onOpenChange, defaultDate
                                     className="px-4 sm:px-6 py-2 text-sm font-bold bg-[#3b6154] hover:bg-[#2b473e] text-white rounded-lg transition-colors flex items-center gap-2 shadow-sm"
                                 >
                                     {isLoading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-                                    {isEditing ? 'Guardar Cambios' : 'Crear Men'}
+                                    {isEditing ? 'Guardar Cambios' : 'Crear Menú'}
                                 </button>
                             </div>
                         </form>
