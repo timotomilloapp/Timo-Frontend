@@ -26,11 +26,11 @@ export function useMenusList(skip: number = 0, take: number = 50) {
     });
 }
 
-export function useMenusByDateRange(startDate: string, endDate: string) {
+export function useMenusByDateRange(startDate: string, endDate: string, take: number = 50) {
     return useQuery({
-        queryKey: ['/menus', startDate, endDate],
+        queryKey: ['/menus', startDate, endDate, take],
         queryFn: async () => {
-            const { data } = await apiClient.get<MenuResponse[]>(`/menus?startDate=${startDate}&endDate=${endDate}&take=7`);
+            const { data } = await apiClient.get<MenuResponse[]>(`/menus?startDate=${startDate}&endDate=${endDate}&take=${take}`);
             return data;
         },
         enabled: !!startDate && !!endDate,
