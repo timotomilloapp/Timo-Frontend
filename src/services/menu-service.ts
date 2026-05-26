@@ -5,9 +5,9 @@ export const menuService = {
     /**
      * Fetch all menus with optional pagination.
      */
-    async findAll(skip?: number, take?: number): Promise<Menu[]> {
+    async findAll(params?: { skip?: number; take?: number; startDate?: string; endDate?: string; cc?: string }): Promise<Menu[]> {
         const { data } = await apiClient.get<Menu[]>('/menus', {
-            params: { skip, take },
+            params,
         });
         return data;
     },
