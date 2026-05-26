@@ -20,9 +20,10 @@ import {
 interface MenuReservationsDialogProps {
     menuId: string | null;
     onClose: () => void;
+    isReadOnly?: boolean;
 }
 
-export function MenuReservationsDialog({ menuId, onClose }: MenuReservationsDialogProps) {
+export function MenuReservationsDialog({ menuId, onClose, isReadOnly = false }: MenuReservationsDialogProps) {
     const { data: reservations, isLoading } = useReservationsByMenu(menuId || '');
     const { mutateAsync: updateBulkStatus, isPending: isUpdatingBulk } = useReservationsBulkStatus();
 
@@ -171,7 +172,7 @@ export function MenuReservationsDialog({ menuId, onClose }: MenuReservationsDial
                             </div>
                         </div>
                     </DialogHeader>
-
+ 
                     <div className="flex-1 overflow-y-auto p-0 bg-white dark:bg-zinc-950 relative">
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center py-12 text-zinc-500">
@@ -187,13 +188,15 @@ export function MenuReservationsDialog({ menuId, onClose }: MenuReservationsDial
                                 <table className="w-full text-sm text-left">
                                     <thead className="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-10 backdrop-blur-sm">
                                         <tr>
-                                            <th className="px-6 py-3 font-medium w-[50px]">
-                                                <Checkbox
-                                                    checked={isAllSelected}
-                                                    onCheckedChange={handleSelectAll}
-                                                    className="data-[state=checked]:bg-zinc-900 data-[state=checked]:border-zinc-900 dark:data-[state=checked]:bg-zinc-100 dark:data-[state=checked]:border-zinc-100 dark:data-[state=checked]:text-zinc-900"
-                                                />
-                                            </th>
+                                            {!isReadOnly && (
+                                                <th className="px-6 py-3 font-medium w-[50px]">
+                                                    <Checkbox
+                                                        checked={isAllSelected}
+                                                        onCheckedChange={handleSelectAll}
+                                                        className="data-[state=checked]:bg-zinc-900 data-[state=checked]:border-zinc-900 dark:data-[state=checked]:bg-zinc-100 dark:data-[state=checked]:border-zinc-100 dark:data-[state=checked]:text-zinc-900"
+                                                    />
+                                                </th>
+                                            )}
                                             <th className="px-6 py-3 font-medium">Nombre</th>
                                             <th className="px-6 py-3 font-medium">Cédula (CC)</th>
                                             <th className="px-6 py-3 font-medium">Proteína</th>
@@ -203,7 +206,7 @@ export function MenuReservationsDialog({ menuId, onClose }: MenuReservationsDial
                                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                                         {paginatedReservations.length === 0 ? (
                                             <tr>
-                                                <td colSpan={5} className="py-8 text-center text-zinc-500">
+                                                <td colSpan={isReadOnly ? 4 : 5} className="py-8 text-center text-zinc-500">
                                                     No se encontraron resultados para "{searchTerm}"
                                                 </td>
                                             </tr>
@@ -218,13 +221,15 @@ export function MenuReservationsDialog({ menuId, onClose }: MenuReservationsDial
                                                             isSelected ? "bg-orange-50/50 dark:bg-orange-500/10" : ""
                                                         )}
                                                     >
-                                                        <td className="px-6 py-3">
-                                                            <Checkbox
-                                                                checked={isSelected}
-                                                                onCheckedChange={(c: boolean) => handleSelectRow(res.id, c)}
-                                                                className="data-[state=checked]:bg-zinc-900 data-[state=checked]:border-zinc-900 dark:data-[state=checked]:bg-zinc-100 dark:data-[state=checked]:border-zinc-100 dark:data-[state=checked]:text-zinc-900"
-                                                            />
-                                                        </td>
+                                                        {!isReadOnly && (
+                                                            <td className="px-6 py-3">
+                                                                <Checkbox
+                                                                    checked={isSelected}
+                                                                    onCheckedChange={(c: boolean) => handleSelectRow(res.id, c)}
+                                                                    className="data-[state=checked]:bg-zinc-900 data-[state=checked]:border-zinc-900 dark:data-[state=checked]:bg-zinc-100 dark:data-[state=checked]:border-zinc-100 dark:data-[state=checked]:text-zinc-900"
+                                                                />
+                                                            </td>
+                                                        )}
                                                         <td className="px-6 py-3 font-medium text-zinc-900 dark:text-zinc-100">
                                                             {res.name || <span className="text-zinc-400 italic">—</span>}
                                                         </td>
@@ -272,7 +277,7 @@ export function MenuReservationsDialog({ menuId, onClose }: MenuReservationsDial
                         </div>
                     </div>
                     {/* Sticky Action Menu for Batch Operations overlapping the modal */}
-                    {selectedIds.length > 0 && (
+                    {selectedIds.length > 0 && !isReadOnly && (
                         <div id="sticky-batch-menu" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-zinc-900 dark:bg-white text-zinc-50 dark:text-zinc-900 px-6 py-3 rounded-full shadow-lg border border-zinc-800 dark:border-zinc-200 flex items-center justify-between gap-6 animate-in slide-in-from-bottom flex-wrap w-max">
                             <span className="font-semibold text-sm">
                                 {selectedIds.length} reserva{selectedIds.length > 1 && 's'} seleccionada{selectedIds.length > 1 && 's'}

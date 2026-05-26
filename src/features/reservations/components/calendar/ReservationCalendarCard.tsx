@@ -16,6 +16,7 @@ export interface ReservationCalendarCardProps {
     onViewReservations: (menuId: string) => void;
     onDownloadSummary: (date: string) => void;
     onViewDetails: (menu: MenuResponse) => void;
+    isReadOnly?: boolean;
 }
 
 export function ReservationCalendarCard({
@@ -27,6 +28,7 @@ export function ReservationCalendarCard({
     onViewReservations,
     onDownloadSummary,
     onViewDetails,
+    isReadOnly = false,
 }: ReservationCalendarCardProps) {
     const isPastDate = isPast(date) && !isToday(date);
     const dateNumber = format(date, 'd');
@@ -55,9 +57,10 @@ export function ReservationCalendarCard({
 
     return (
         <div
-            onClick={() => onSelectChange(date, !isSelected)}
+            onClick={() => !isReadOnly && onSelectChange(date, !isSelected)}
             className={cn(
-                "group relative h-full min-h-[100px] w-full p-2 flex flex-col gap-1 transition-all duration-200 border cursor-pointer",
+                "group relative h-full min-h-[100px] w-full p-2 flex flex-col gap-1 transition-all duration-200 border",
+                isReadOnly ? "cursor-default" : "cursor-pointer",
                 isSelected ? "border-zinc-900 dark:border-zinc-100 ring-1 ring-zinc-900/20 dark:ring-zinc-100/20 shadow-sm" :
                     (isCurrentMonth ? "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700" : "border-transparent opacity-60 bg-zinc-50 dark:bg-zinc-900/20 text-zinc-400"),
                 (!isSelected && isCurrentMonth && isServed) ? "bg-zinc-50 dark:bg-zinc-900/10" : "bg-white dark:bg-zinc-950"

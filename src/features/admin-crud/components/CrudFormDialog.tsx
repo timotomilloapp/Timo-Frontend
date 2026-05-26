@@ -85,6 +85,21 @@ export function CrudFormDialog({
         const baseInputClasses = `w-full px-3 py-2 bg-white dark:bg-zinc-950 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white transition-colors
       ${error ? 'border-red-500' : 'border-zinc-200 dark:border-zinc-800'}`;
 
+        let displayValue = value;
+        if (field.type === 'date' && value) {
+            try {
+                const d = new Date(value);
+                if (!isNaN(d.getTime())) {
+                    const yyyy = d.getUTCFullYear();
+                    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+                    const dd = String(d.getUTCDate()).padStart(2, '0');
+                    displayValue = `${yyyy}-${mm}-${dd}`;
+                }
+            } catch {
+                // Keep original
+            }
+        }
+
         return (
             <div key={field.name} className="space-y-1.5">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -107,7 +122,10 @@ export function CrudFormDialog({
                         type="number"
                         value={value}
                         placeholder={field.placeholder}
-                        onChange={(e) => handleChange(field.name, Number(e.target.value))}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            handleChange(field.name, val === '' ? '' : Number(val));
+                        }}
                         className={baseInputClasses}
                         disabled={isLoading}
                     />
@@ -125,6 +143,26 @@ export function CrudFormDialog({
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                     </select>
+                )}
+
+                {field.type === 'textarea' && (
+                    <textarea
+                        value={value}
+                        placeholder={field.placeholder}
+                        onChange={(e) => handleChange(field.name, e.target.value)}
+                        className={`${baseInputClasses} h-24 resize-none`}
+                        disabled={isLoading}
+                    />
+                )}
+
+                {field.type === 'date' && (
+                    <input
+                        type="date"
+                        value={displayValue}
+                        onChange={(e) => handleChange(field.name, e.target.value)}
+                        className={baseInputClasses}
+                        disabled={isLoading}
+                    />
                 )}
 
                 {field.type === 'boolean' && (

@@ -13,6 +13,7 @@ import { Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useReservationsBulkServed, useReservationsBulkCancelled } from '../../hooks/useReservations';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { authService } from '@/services/auth-service';
 
 export function ReservationsCalendarPage() {
     const calendar = useMonthCalendar();
@@ -23,6 +24,7 @@ export function ReservationsCalendarPage() {
     const { mutateAsync: bulkServed, isPending: isServingBulk } = useReservationsBulkServed();
     const { mutateAsync: bulkCancelled, isPending: isCancellingBulk } = useReservationsBulkCancelled();
 
+    const [isReadOnly, setIsReadOnly] = useState(false);
     const [selectedDates, setSelectedDates] = useState<string[]>([]);
     const [viewReservationsMenuId, setViewReservationsMenuId] = useState<string | null>(null);
     const [downloadSummaryDate, setDownloadSummaryDate] = useState<string | null>(null);
@@ -32,6 +34,20 @@ export function ReservationsCalendarPage() {
     const [confirmAction, setConfirmAction] = useState<ConfirmActionType>(null);
 
     const stickyMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        async function fetchRole() {
+            try {
+                const profile = await authService.me();
+                if (profile?.role === 'USER') {
+                    setIsReadOnly(true);
+                }
+            } catch {
+                // Default to false
+            }
+        }
+        fetchRole();
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -138,6 +154,7 @@ export function ReservationsCalendarPage() {
                                                 onViewReservations={handleViewReservations}
                                                 onDownloadSummary={handleDownloadSummary}
                                                 onViewDetails={(menu) => setViewDetailsMenu(menu)}
+                                                isReadOnly={isReadOnly}
                                             />
                                         </div>
                                     );
@@ -149,7 +166,7 @@ export function ReservationsCalendarPage() {
             </div>
 
             {/* Sticky Action Menu for Batch Operations */}
-            {selectedDates.length > 0 && (
+            {selectedDates.length > 0 && !isReadOnly && (
                 <div
                     ref={stickyMenuRef}
                     className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 px-6 py-3 rounded-full shadow-lg border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-6 animate-in slide-in-from-bottom flex-wrap"
@@ -190,6 +207,7 @@ export function ReservationsCalendarPage() {
             <MenuReservationsDialog
                 menuId={viewReservationsMenuId}
                 onClose={() => setViewReservationsMenuId(null)}
+                isReadOnly={isReadOnly}
             />
 
             <ProteinSummaryTicketModal

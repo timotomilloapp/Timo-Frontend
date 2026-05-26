@@ -6,18 +6,23 @@ import { X, UserPlus, AlertCircle } from 'lucide-react';
 interface WhitelistCreateDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (payload: { cc: string; name: string }) => Promise<void>;
+    areas: { id: string; name: string }[];
+    onSave: (payload: { cc: string; name: string; birthdate: string | null; areaId: string | null }) => Promise<void>;
     isLoading: boolean;
 }
 
-export function WhitelistCreateDialog({ isOpen, onClose, onSave, isLoading }: WhitelistCreateDialogProps) {
+export function WhitelistCreateDialog({ isOpen, onClose, areas, onSave, isLoading }: WhitelistCreateDialogProps) {
     const [name, setName] = useState('');
     const [cc, setCc] = useState('');
+    const [birthdate, setBirthdate] = useState('');
+    const [areaId, setAreaId] = useState('');
     const [error, setError] = useState('');
 
     if (!isOpen) {
         if (name) setName('');
         if (cc) setCc('');
+        if (birthdate) setBirthdate('');
+        if (areaId) setAreaId('');
         if (error) setError('');
         return null;
     }
@@ -26,7 +31,12 @@ export function WhitelistCreateDialog({ isOpen, onClose, onSave, isLoading }: Wh
         e.preventDefault();
         try {
             setError('');
-            await onSave({ name, cc });
+            await onSave({ 
+                name, 
+                cc, 
+                birthdate: birthdate || null, 
+                areaId: areaId || null 
+            });
             onClose();
         } catch (err: any) {
             setError(err?.response?.data?.message || 'Error al crear el empleado');
@@ -86,6 +96,30 @@ export function WhitelistCreateDialog({ isOpen, onClose, onSave, isLoading }: Wh
                                 disabled={isLoading}
                                 className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                             />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-zinc-900 dark:text-zinc-100">Cumpleaños</label>
+                            <input
+                                type="date"
+                                value={birthdate}
+                                onChange={e => setBirthdate(e.target.value)}
+                                disabled={isLoading}
+                                className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-zinc-900 dark:text-zinc-100"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-zinc-900 dark:text-zinc-100">Área</label>
+                            <select
+                                value={areaId}
+                                onChange={e => setAreaId(e.target.value)}
+                                disabled={isLoading}
+                                className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-zinc-900 dark:text-zinc-100"
+                            >
+                                <option value="">Seleccionar área (opcional)</option>
+                                {areas.map(a => (
+                                    <option key={a.id} value={a.id}>{a.name}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 

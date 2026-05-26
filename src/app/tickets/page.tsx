@@ -6,10 +6,31 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Printer, ArrowLeft, Loader2, Search } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { authService } from '@/services/auth-service';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 export default function TicketsGeneratorPage() {
+    const router = useRouter();
+    const [authLoading, setAuthLoading] = useState(true);
+
+    useEffect(() => {
+        async function checkAuth() {
+            try {
+                const profile = await authService.me();
+                if (profile?.role === 'USER') {
+                    router.replace('/admin');
+                } else {
+                    setAuthLoading(false);
+                }
+            } catch {
+                router.replace('/admin/login');
+            }
+        }
+        checkAuth();
+    }, [router]);
+
     const todayStr = format(new Date(), 'yyyy-MM-dd');
     const { data: reservations, isLoading } = useReservationsByDate(todayStr);
 
@@ -70,11 +91,13 @@ export default function TicketsGeneratorPage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    if (isLoading) {
+    if (authLoading || isLoading) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-950">
                 <Loader2 className="h-8 w-8 animate-spin text-zinc-500 mb-4" />
-                <p className="text-zinc-500 font-medium">Cargando reservaciones...</p>
+                <p className="text-zinc-500 font-medium">
+                    {authLoading ? 'Verificando acceso...' : 'Cargando reservaciones...'}
+                </p>
             </div>
         );
     }
