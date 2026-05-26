@@ -9,6 +9,8 @@ import { Edit, FileUp, Search, Trash2, Power, Plus } from 'lucide-react';
 import { WhitelistBulkDialog } from './WhitelistBulkDialog';
 import { WhitelistEditDialog } from './WhitelistEditDialog';
 import { WhitelistCreateDialog } from './WhitelistCreateDialog';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/services/api-client';
 
 export function WhitelistPage() {
     const [page, setPage] = useState(0);
@@ -18,6 +20,14 @@ export function WhitelistPage() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
     const { data: listResponse, isLoading, isFetching } = useWhitelistList(skip, take, debouncedSearch);
+    const { data: areas } = useQuery({
+        queryKey: ['/areas', 'active-all'],
+        queryFn: async () => {
+            const { data } = await apiClient.get<any[]>('/areas/active/all');
+            return data;
+        }
+    });
+
     const toggleMut = useWhitelistToggle();
     const deleteMut = useWhitelistDelete();
     const updateMut = useWhitelistUpdate();
@@ -179,6 +189,7 @@ export function WhitelistPage() {
             <WhitelistEditDialog
                 isOpen={editDialog.isOpen}
                 entry={editDialog.entry}
+                areas={areas || []}
                 onClose={() => setEditDialog({ isOpen: false, entry: null })}
                 onSave={async (payload) => {
                     if (editDialog.entry) {
@@ -199,6 +210,7 @@ export function WhitelistPage() {
 
             <WhitelistCreateDialog
                 isOpen={createDialogOpen}
+                areas={areas || []}
                 onClose={() => setCreateDialogOpen(false)}
                 onSave={async (payload) => {
                     await createMut.mutateAsync(payload);
