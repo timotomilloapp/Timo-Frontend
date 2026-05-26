@@ -12,9 +12,13 @@ import {
     ShieldCheck,
     Users,
     Printer,
-    X
+    X,
+    Cookie,
+    Layers,
+    Cake
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { authService } from '@/services/auth-service';
 
 interface NavItem {
     title: string;
@@ -35,6 +39,21 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
     const pathname = usePathname();
+    const [role, setRole] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+        async function fetchRole() {
+            try {
+                const profile = await authService.me();
+                setRole(profile.role);
+            } catch {
+                // Ignore
+            }
+        }
+        fetchRole();
+    }, []);
+
+    const isUser = role === 'USER';
 
     const sections: NavSection[] = [
         {
@@ -51,39 +70,41 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
         {
             title: 'Elementos del menú',
             items: [
-                {
+                !isUser && {
                     title: 'Proteínas',
                     href: '/admin/menu-items/proteins',
                     icon: <Beef size={18} />,
                     isActive: pathname.startsWith('/admin/menu-items/proteins')
                 },
-                /* 
-                // Módulos desactivados visualmente por petición del usuario
                 {
-                    title: 'Acompañamientos',
-                    href: '/admin/menu-items/side-dishes',
-                    icon: <Salad size={18} />,
-                    isActive: pathname.startsWith('/admin/menu-items/side-dishes')
+                    title: 'Aperitivos',
+                    href: '/admin/menu-items/appetizers',
+                    icon: <Cookie size={18} />,
+                    isActive: pathname.startsWith('/admin/menu-items/appetizers')
+                },
+            ].filter(Boolean) as NavItem[]
+        },
+        {
+            title: 'Personal',
+            items: [
+                !isUser && {
+                    title: 'Empleados',
+                    href: '/admin/whitelist',
+                    icon: <ShieldCheck size={18} />,
+                    isActive: pathname.startsWith('/admin/whitelist')
                 },
                 {
-                    title: 'Sopas',
-                    href: '/admin/menu-items/soups',
-                    icon: <Soup size={18} />,
-                    isActive: pathname.startsWith('/admin/menu-items/soups')
-                },
-                {
-                    title: 'Bebidas',
-                    href: '/admin/menu-items/drinks',
-                    icon: <Wine size={18} />,
-                    isActive: pathname.startsWith('/admin/menu-items/drinks')
+                    title: 'Cumpleaños',
+                    href: '/admin/birthdays',
+                    icon: <Cake size={18} />,
+                    isActive: pathname.startsWith('/admin/birthdays')
                 }
-                */
             ].filter(Boolean) as NavItem[]
         },
         {
             title: 'Operaciones',
             items: [
-                {
+                !isUser && {
                     title: 'Menús',
                     href: '/admin/menus',
                     icon: <Utensils size={18} />,
@@ -95,27 +116,27 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
                     icon: <CalendarCheck size={18} />,
                     isActive: pathname.startsWith('/admin/reservations')
                 },
-                {
+                !isUser && {
                     title: 'Tickets',
                     href: '/tickets',
                     icon: <Printer size={18} />,
                     isActive: pathname.startsWith('/tickets')
                 },
-                {
-                    title: 'Empleados',
-                    href: '/admin/whitelist',
-                    icon: <ShieldCheck size={18} />,
-                    isActive: pathname.startsWith('/admin/whitelist')
-                },
-                {
+                !isUser && {
                     title: 'Usuarios',
                     href: '/admin/users',
                     icon: <Users size={18} />,
                     isActive: pathname.startsWith('/admin/users')
+                },
+                !isUser && {
+                    title: 'Áreas',
+                    href: '/admin/areas',
+                    icon: <Layers size={18} />,
+                    isActive: pathname.startsWith('/admin/areas')
                 }
-            ]
+            ].filter(Boolean) as NavItem[]
         }
-    ];
+    ].filter(section => section.items.length > 0);
 
     return (
         <>
