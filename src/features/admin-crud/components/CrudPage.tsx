@@ -111,6 +111,7 @@ export function CrudPage({ config }: CrudPageProps) {
                 const allowedToDelete = config.canDelete ? config.canDelete(item) : true;
                 return (
                     <div className="flex items-center justify-center gap-2">
+                        {config.customActions?.(item)}
                         {item.observations !== undefined && item.observations !== null && item.observations !== '' && (
                             <button
                                 onClick={() => setSelectedObs(item.observations)}

@@ -9,7 +9,10 @@ import { Edit, FileUp, Search, Trash2, Power, Plus } from 'lucide-react';
 import { WhitelistBulkDialog } from './WhitelistBulkDialog';
 import { WhitelistEditDialog } from './WhitelistEditDialog';
 import { WhitelistCreateDialog } from './WhitelistCreateDialog';
+import { WhitelistCompleteDataDialog } from './WhitelistCompleteDataDialog';
+import { WhitelistInfoDialog } from './WhitelistInfoDialog';
 import { useQuery } from '@tanstack/react-query';
+import { AlertCircle, Eye } from 'lucide-react';
 import { apiClient } from '@/services/api-client';
 
 export function WhitelistPage() {
@@ -43,6 +46,8 @@ export function WhitelistPage() {
     }>({ isOpen: false, title: '', description: '', onConfirm: () => { } });
 
     const [editDialog, setEditDialog] = useState<{ isOpen: boolean; entry: WhitelistEntry | null }>({ isOpen: false, entry: null });
+    const [infoDialog, setInfoDialog] = useState<{ isOpen: boolean; entry: WhitelistEntry | null }>({ isOpen: false, entry: null });
+    const [completeDataDialog, setCompleteDataDialog] = useState<{ isOpen: boolean; entry: WhitelistEntry | null }>({ isOpen: false, entry: null });
     const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
@@ -88,6 +93,13 @@ export function WhitelistPage() {
             header: '',
             render: (row) => (
                 <div className="flex items-center gap-1 justify-end">
+                    <button
+                        onClick={() => setInfoDialog({ isOpen: true, entry: row })}
+                        title="Ver Información"
+                        className="p-2 text-zinc-500 hover:text-zinc-900 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md transition-colors hover:bg-zinc-100 dark:hover:text-zinc-100 dark:hover:bg-zinc-800"
+                    >
+                        <Eye size={16} />
+                    </button>
                     <button
                         onClick={() => toggleMut.mutate(row.id)}
                         disabled={toggleMut.isPending}
@@ -194,6 +206,26 @@ export function WhitelistPage() {
                 onSave={async (payload) => {
                     if (editDialog.entry) {
                         await updateMut.mutateAsync({ id: editDialog.entry.id, data: payload });
+                    }
+                }}
+                isLoading={updateMut.isPending}
+            />
+
+            <WhitelistInfoDialog
+                isOpen={infoDialog.isOpen}
+                entry={infoDialog.entry}
+                onClose={() => setInfoDialog({ isOpen: false, entry: null })}
+                onOpenCompleteData={() => setCompleteDataDialog({ isOpen: true, entry: infoDialog.entry })}
+            />
+
+            <WhitelistCompleteDataDialog
+                isOpen={completeDataDialog.isOpen}
+                entry={completeDataDialog.entry}
+                areas={areas || []}
+                onClose={() => setCompleteDataDialog({ isOpen: false, entry: null })}
+                onSave={async (payload) => {
+                    if (completeDataDialog.entry) {
+                        await updateMut.mutateAsync({ id: completeDataDialog.entry.id, data: payload });
                     }
                 }}
                 isLoading={updateMut.isPending}

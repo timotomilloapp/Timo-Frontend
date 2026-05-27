@@ -7,6 +7,9 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/api-client';
 import { CrudEntityConfig } from '@/features/admin-crud/types';
 import { exportAppetizersToXlsx, exportAppetizersToCsv } from '@/lib/export-appetizers';
+import { useCrudUpdate } from '@/features/admin-crud/hooks/useCrud';
+import { authService } from '@/services/auth-service';
+import { RotateCcw } from 'lucide-react';
 
 function isDateTomorrowOrLaterColombia(dateStr: string): boolean {
     if (!dateStr) return false;
@@ -29,6 +32,37 @@ export default function AppetizersPage() {
         }
     });
 
+    // 2. Fetch current user role to toggle edit permissions
+    const [isReadOnly, setIsReadOnly] = React.useState(false);
+    React.useEffect(() => {
+        async function fetchRole() {
+            try {
+                const profile = await authService.me();
+                if (profile?.role === 'USER') {
+                    setIsReadOnly(true);
+                }
+            } catch {
+                // ignore
+            }
+        }
+        fetchRole();
+    }, []);
+
+    const updateMut = useCrudUpdate('/appetizers');
+    const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
+
+    const handleToggleStatus = async (item: any) => {
+        setIsUpdatingStatus(true);
+        try {
+            const newStatus = item.status === 'PENDIENTE' ? 'ENTREGADO' : 'PENDIENTE';
+            await updateMut.mutateAsync({ id: item.id, payload: { status: newStatus } });
+        } catch (error) {
+            console.error('Error toggling status', error);
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
     const activeAreas = areas || [];
 
     // 2. Build the config reactively
@@ -40,8 +74,10 @@ export default function AppetizersPage() {
             base: '/appetizers',
         },
         hasToggle: false, // Hide toggle since Appetizer has no isActive field
-        canEdit: (item) => isDateTomorrowOrLaterColombia(item.date),
-        canDelete: (item) => isDateTomorrowOrLaterColombia(item.date),
+        // Only admins can see edit/delete buttons, so we return true unconditionally.
+        // The CrudPage automatically hides these buttons if the user is a 'USER'.
+        canEdit: () => true,
+        canDelete: () => true,
         onExport: async (format) => {
             try {
                 const { data } = await apiClient.get<any[]>('/appetizers', {
@@ -56,20 +92,33 @@ export default function AppetizersPage() {
                 console.error('Error exporting appetizers', err);
             }
         },
+        customActions: (item) => {
+            if (isReadOnly) return null;
+            return (
+                <button
+                    onClick={() => handleToggleStatus(item)}
+                    disabled={isUpdatingStatus}
+                    className="p-1.5 text-blue-500 hover:text-blue-700 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 flex items-center justify-center"
+                    title="Actualizar estado"
+                >
+                    <RotateCcw size={14} className={isUpdatingStatus ? "animate-spin" : ""} />
+                </button>
+            );
+        },
         columns: [
-            { 
-                header: 'Unidades', 
+            {
+                header: 'Unidades',
                 accessorKey: 'quantity',
                 align: 'left',
                 render: (item) => <div className="w-16 text-center font-bold">{item.quantity}</div>
             },
-            { 
-                header: 'Área', 
+            {
+                header: 'Área',
                 accessorKey: 'area.name',
                 render: (item) => item.area?.name || '-'
             },
-            { 
-                header: 'Fecha a pedir', 
+            {
+                header: 'Fecha a pedir',
                 accessorKey: 'date',
                 render: (item) => item.date ? new Date(item.date).toLocaleDateString('es-CO', { timeZone: 'UTC' }) : '-'
             },
@@ -79,11 +128,10 @@ export default function AppetizersPage() {
                 render: (item) => {
                     const isPending = item.status === 'PENDIENTE';
                     return (
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                            isPending 
-                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' 
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${isPending
+                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
                                 : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                        }`}>
+                            }`}>
                             {isPending ? 'Pendiente' : 'Entregado'}
                         </span>
                     );
@@ -96,22 +144,22 @@ export default function AppetizersPage() {
             }
         ],
         formFields: [
-            { 
-                name: 'quantity', 
-                label: 'Unidades', 
-                type: 'number', 
-                placeholder: 'Ej. 10' 
+            {
+                name: 'quantity',
+                label: 'Unidades',
+                type: 'number',
+                placeholder: 'Ej. 10'
             },
-            { 
-                name: 'areaId', 
-                label: 'Área', 
+            {
+                name: 'areaId',
+                label: 'Área',
                 type: 'select',
                 options: activeAreas.map((a: any) => ({ label: a.name, value: a.id }))
             },
-            { 
-                name: 'date', 
-                label: 'Fecha a pedir', 
-                type: 'date' 
+            {
+                name: 'date',
+                label: 'Fecha a pedir',
+                type: 'date'
             },
             {
                 name: 'status',
@@ -122,11 +170,11 @@ export default function AppetizersPage() {
                     { label: 'Entregado', value: 'ENTREGADO' }
                 ]
             },
-            { 
-                name: 'observations', 
-                label: 'Observaciones (Opcional)', 
+            {
+                name: 'observations',
+                label: 'Observaciones (Opcional)',
                 type: 'textarea',
-                placeholder: 'Ej. Observaciones adicionales para el pedido...' 
+                placeholder: 'Ej. Observaciones adicionales para el pedido...'
             },
         ],
         formSchema: z.object({
