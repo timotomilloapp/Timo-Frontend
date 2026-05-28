@@ -37,7 +37,7 @@ export default function MenusPage() {
     const [cedula, setCedula] = useState<string | null>(null);
     const [userName, setUserName] = useState<string>('');
 
-    // States for Card 1 (Today or Last Reserved)
+    // States for Card 1 (Today's menu)
     const [card1Menu, setCard1Menu] = useState<Menu | null>(null);
     const [card1Date, setCard1Date] = useState<Date | null>(null);
     const [card1Loading, setCard1Loading] = useState<boolean>(true);
@@ -47,15 +47,9 @@ export default function MenusPage() {
     const [card2Date, setCard2Date] = useState<Date | null>(null);
     const [card2Loading, setCard2Loading] = useState<boolean>(true);
 
-    // States for Card 3 (Second next scheduled)
-    const [card3Menu, setCard3Menu] = useState<Menu | null>(null);
-    const [card3Date, setCard3Date] = useState<Date | null>(null);
-    const [card3Loading, setCard3Loading] = useState<boolean>(true);
-
     const loadAllCards = async (userCc: string) => {
         setCard1Loading(true);
         setCard2Loading(true);
-        setCard3Loading(true);
 
         const { year, month, day } = todayColombiaYMD();
         const todayUTC = new Date(Date.UTC(year, month - 1, day));
@@ -65,7 +59,7 @@ export default function MenusPage() {
         tomorrowUTC.setUTCDate(tomorrowUTC.getUTCDate() + 1);
         const tomorrowStr = `${tomorrowUTC.getUTCFullYear()}-${String(tomorrowUTC.getUTCMonth() + 1).padStart(2, '0')}-${String(tomorrowUTC.getUTCDate()).padStart(2, '0')}`;
 
-        // 1. Fetch Card 1 (Today's Menu or Last Reserved Menu)
+        // 1. Fetch Card 1 (Today's Menu)
         let todayMenu: Menu | null = null;
         try {
             todayMenu = await menuService.findByDate(todayStr, userCc);
@@ -73,46 +67,11 @@ export default function MenusPage() {
             todayMenu = null;
         }
 
-        if (todayMenu) {
-            setCard1Menu(todayMenu);
-            setCard1Date(todayUTC);
-            setCard1Loading(false);
-        } else {
-            // Fallback: get last reserved menu
-            try {
-                const reservations = await reservationService.findByCC(userCc, 'all');
-                // Filter reservations to only past/today (menu date <= today)
-                const pastReservations = reservations.filter(r => {
-                    const menuDate = new Date(r.menu.date);
-                    return menuDate.getTime() <= todayUTC.getTime();
-                });
+        setCard1Menu(todayMenu);
+        setCard1Date(todayUTC);
+        setCard1Loading(false);
 
-                if (pastReservations.length > 0) {
-                    // Sort descending by menu date
-                    pastReservations.sort((a, b) => new Date(b.menu.date).getTime() - new Date(a.menu.date).getTime());
-                    const lastRes = pastReservations[0];
-                    const lastResDateStr = lastRes.menu.date.slice(0, 10);
-                    const lastResMenu = await menuService.findByDate(lastResDateStr, userCc);
-                    
-                    const lastResDate = new Date(lastResMenu.date);
-                    const lastResUTCDate = new Date(Date.UTC(lastResDate.getUTCFullYear(), lastResDate.getUTCMonth(), lastResDate.getUTCDate()));
-
-                    setCard1Menu(lastResMenu);
-                    setCard1Date(lastResUTCDate);
-                } else {
-                    setCard1Menu(null);
-                    setCard1Date(todayUTC);
-                }
-            } catch (err) {
-                console.error("Error fetching past reservations", err);
-                setCard1Menu(null);
-                setCard1Date(todayUTC);
-            } finally {
-                setCard1Loading(false);
-            }
-        }
-
-        // 2. Fetch Card 2 and Card 3 (Next 2 scheduled menus starting tomorrow)
+        // 2. Fetch Card 2 (Next scheduled menu starting tomorrow)
         try {
             const upcomingMenus = await menuService.findAll({ startDate: tomorrowStr, cc: userCc });
             // Sort ascending by date
@@ -128,35 +87,12 @@ export default function MenusPage() {
                 setCard2Menu(null);
                 setCard2Date(tomorrowUTC);
             }
-
-            // Card 3
-            if (sortedMenus.length > 1) {
-                const m3 = sortedMenus[1];
-                const d3 = new Date(m3.date);
-                setCard3Menu(m3);
-                setCard3Date(new Date(Date.UTC(d3.getUTCFullYear(), d3.getUTCMonth(), d3.getUTCDate())));
-            } else {
-                let d3Date = new Date(tomorrowUTC);
-                d3Date.setUTCDate(d3Date.getUTCDate() + 1);
-                if (sortedMenus.length > 0) {
-                    const d2 = new Date(sortedMenus[0].date);
-                    d3Date = new Date(Date.UTC(d2.getUTCFullYear(), d2.getUTCMonth(), d2.getUTCDate() + 1));
-                }
-                setCard3Menu(null);
-                setCard3Date(d3Date);
-            }
         } catch (err) {
             console.error("Error fetching upcoming menus", err);
             setCard2Menu(null);
             setCard2Date(tomorrowUTC);
-            
-            const tomorrowPlusOne = new Date(tomorrowUTC);
-            tomorrowPlusOne.setUTCDate(tomorrowPlusOne.getUTCDate() + 1);
-            setCard3Menu(null);
-            setCard3Date(tomorrowPlusOne);
         } finally {
             setCard2Loading(false);
-            setCard3Loading(false);
         }
     };
 
@@ -238,15 +174,13 @@ export default function MenusPage() {
                     </p>
                 </div>
 
-                {/* 3-Card layout */}
+                {/* 2-Card layout */}
                 <div className="flex-1 w-full pb-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto w-full">
                         {/* Card 1 */}
                         <div className="flex flex-col gap-3 text-center md:text-left">
                             <div className="text-xs font-bold uppercase tracking-widest text-[#3b6154] dark:text-[#528271]">
-                                {card1Menu && card1Menu.date.toString().slice(0, 10) === todayStr
-                                    ? "Menú de Hoy"
-                                    : "Último Reservado"}
+                                Menú de Hoy
                             </div>
                             {card1Date && (
                                 <MenuCard
@@ -270,23 +204,6 @@ export default function MenusPage() {
                                     date={card2Date}
                                     menu={card2Menu}
                                     isLoading={card2Loading}
-                                    cedula={cedula}
-                                    userName={userName}
-                                    onReservationSuccess={() => loadAllCards(cedula)}
-                                />
-                            )}
-                        </div>
-
-                        {/* Card 3 */}
-                        <div className="flex flex-col gap-3 text-center md:text-left">
-                            <div className="text-xs font-bold uppercase tracking-widest text-[#3b6154] dark:text-[#528271]">
-                                Próximo Programado
-                            </div>
-                            {card3Date && (
-                                <MenuCard
-                                    date={card3Date}
-                                    menu={card3Menu}
-                                    isLoading={card3Loading}
                                     cedula={cedula}
                                     userName={userName}
                                     onReservationSuccess={() => loadAllCards(cedula)}
