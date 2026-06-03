@@ -74,7 +74,11 @@ export function CrudPage({ config }: CrudPageProps) {
                 await updateMut.mutateAsync({ id: editingItem.id, payload: formData });
             } else {
                 // Create — go back to first page so user sees the new item
-                await createMut.mutateAsync(formData);
+                const payload = { ...formData };
+                if (config.entityKey === 'appetizers') {
+                    delete payload.status;
+                }
+                await createMut.mutateAsync(payload);
                 setPage(0);
             }
             setIsFormOpen(false);
@@ -112,11 +116,20 @@ export function CrudPage({ config }: CrudPageProps) {
                 return (
                     <div className="flex items-center justify-center gap-2">
                         {config.customActions?.(item)}
-                        {item.observations !== undefined && item.observations !== null && item.observations !== '' && (
+                        {item.observations !== undefined && (
                             <button
-                                onClick={() => setSelectedObs(item.observations)}
-                                className="p-1.5 text-zinc-500 hover:text-zinc-900 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md transition-colors hover:bg-zinc-100 dark:hover:text-zinc-100 dark:hover:bg-zinc-800"
-                                title="Ver observaciones"
+                                onClick={() => {
+                                    if (item.observations && item.observations.trim() !== '') {
+                                        setSelectedObs(item.observations);
+                                    }
+                                }}
+                                disabled={!item.observations || item.observations.trim() === ''}
+                                className={`p-1.5 border rounded-md transition-colors ${
+                                    item.observations && item.observations.trim() !== ''
+                                        ? 'text-zinc-500 hover:text-zinc-900 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 cursor-pointer'
+                                        : 'text-zinc-300 dark:text-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/20 border-zinc-100 dark:border-zinc-800/30 cursor-not-allowed opacity-40'
+                                }`}
+                                title={item.observations && item.observations.trim() !== '' ? "Ver observaciones" : "Sin observaciones"}
                             >
                                 <FileText size={14} />
                             </button>
