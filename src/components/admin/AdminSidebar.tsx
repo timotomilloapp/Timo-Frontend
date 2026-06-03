@@ -77,7 +77,7 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
                     isActive: pathname.startsWith('/admin/menu-items/proteins')
                 },
                 {
-                    title: 'Aperitivos',
+                    title: 'Refrigerios',
                     href: '/admin/menu-items/appetizers',
                     icon: <Cookie size={18} />,
                     isActive: pathname.startsWith('/admin/menu-items/appetizers')

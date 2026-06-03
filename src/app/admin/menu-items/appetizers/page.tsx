@@ -11,16 +11,6 @@ import { useCrudUpdate } from '@/features/admin-crud/hooks/useCrud';
 import { authService } from '@/services/auth-service';
 import { RotateCcw } from 'lucide-react';
 
-function isDateTomorrowOrLaterColombia(dateStr: string): boolean {
-    if (!dateStr) return false;
-    const now = new Date();
-    // Colombia is UTC-5
-    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-    const colDate = new Date(utc + (3600000 * -5));
-    const todayStr = colDate.toISOString().slice(0, 10);
-    const targetStr = dateStr.split('T')[0];
-    return targetStr > todayStr;
-}
 
 export default function AppetizersPage() {
     // 1. Fetch active areas dynamically from the database
@@ -68,8 +58,8 @@ export default function AppetizersPage() {
     // 2. Build the config reactively
     const appetizersConfig: CrudEntityConfig = {
         entityKey: 'appetizers',
-        title: 'Aperitivos',
-        singularTitle: 'Aperitivo',
+        title: 'Refrigerios',
+        singularTitle: 'Refrigerio',
         endpoints: {
             base: '/appetizers',
         },
@@ -180,10 +170,7 @@ export default function AppetizersPage() {
         formSchema: z.object({
             quantity: z.coerce.number().min(1, 'La cantidad debe ser mayor o igual a 1'),
             areaId: z.string().uuid('Por favor seleccione una área válida'),
-            date: z.string().min(1, 'Por favor seleccione una fecha válida').refine(
-                (val) => isDateTomorrowOrLaterColombia(val),
-                { message: 'La fecha de la solicitud debe ser de mañana en adelante (Colombia timezone)' }
-            ),
+            date: z.string().min(1, 'Por favor seleccione una fecha válida'),
             status: z.enum(['PENDIENTE', 'ENTREGADO']).default('PENDIENTE'),
             observations: z.string().optional(),
         }),
@@ -201,7 +188,7 @@ export default function AppetizersPage() {
             <div className="min-h-[400px] flex items-center justify-center bg-white dark:bg-zinc-950">
                 <div className="flex flex-col items-center gap-3">
                     <div className="w-8 h-8 border-[3px] border-zinc-200 border-t-zinc-900 dark:border-zinc-700 dark:border-t-white rounded-full animate-spin" />
-                    <p className="text-xs font-medium text-zinc-400 uppercase tracking-widest">Cargando aperitivos…</p>
+                    <p className="text-xs font-medium text-zinc-400 uppercase tracking-widest">Cargando refrigerios…</p>
                 </div>
             </div>
         );

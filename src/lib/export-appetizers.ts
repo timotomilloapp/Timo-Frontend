@@ -55,7 +55,7 @@ function getFilename(extension: 'xlsx' | 'csv'): string {
         day: '2-digit',
     });
     const dateStr = formatter.format(new Date());
-    return `resumen_aperitivos_${dateStr}.${extension}`;
+    return `resumen_refrigerios_${dateStr}.${extension}`;
 }
 
 /**
@@ -76,7 +76,7 @@ export function exportAppetizersToXlsx(appetizers: any[]): void {
     worksheet['!cols'] = colWidths;
 
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Aperitivos');
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Refrigerios');
 
     XLSX.writeFile(workbook, getFilename('xlsx'));
 }
