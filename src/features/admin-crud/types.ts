@@ -33,5 +33,12 @@ export interface CrudEntityConfig<T = any, CreateDTO = any, UpdateDTO = CreateDT
     canDelete?: (item: T) => boolean;
     onExport?: (format: 'xlsx' | 'csv') => void | Promise<void>;
     customActions?: (item: T) => React.ReactNode; // Optional custom actions to render in the actions column
+    customForm?: (props: {
+        isOpen: boolean;
+        onClose: () => void;
+        onSubmit: (data: any) => Promise<void>;
+        initialData?: any;
+        isLoading?: boolean;
+    }) => React.ReactNode;
 }
 

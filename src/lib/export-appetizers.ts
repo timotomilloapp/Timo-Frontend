@@ -37,14 +37,31 @@ function formatDateTime(isoString: string): string {
 }
 
 function buildRows(appetizers: any[]): ExportAppetizerRow[] {
-    return appetizers.map((a) => ({
-        'Unidades': a.quantity,
-        'Área': a.area?.name || '—',
-        'Fecha a Pedir': formatDate(a.date),
-        'Estado': formatStatus(a.status),
-        'Observaciones': a.observations || '—',
-        'Fecha Creación': formatDateTime(a.createdAt),
-    }));
+    const rows: ExportAppetizerRow[] = [];
+    for (const a of appetizers) {
+        if (a.details && a.details.length > 0) {
+            for (const detail of a.details) {
+                rows.push({
+                    'Unidades': detail.quantity,
+                    'Área': detail.area?.name || '—',
+                    'Fecha a Pedir': formatDate(a.date),
+                    'Estado': formatStatus(a.status),
+                    'Observaciones': a.observations || '—',
+                    'Fecha Creación': formatDateTime(a.createdAt),
+                });
+            }
+        } else {
+            rows.push({
+                'Unidades': a.quantity,
+                'Área': '—',
+                'Fecha a Pedir': formatDate(a.date),
+                'Estado': formatStatus(a.status),
+                'Observaciones': a.observations || '—',
+                'Fecha Creación': formatDateTime(a.createdAt),
+            });
+        }
+    }
+    return rows;
 }
 
 function getFilename(extension: 'xlsx' | 'csv'): string {

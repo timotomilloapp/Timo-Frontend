@@ -242,14 +242,24 @@ export function CrudPage({ config }: CrudPageProps) {
                 }}
             />
 
-            <CrudFormDialog
-                isOpen={isFormOpen}
-                onClose={() => setIsFormOpen(false)}
-                onSubmit={handleFormSubmit}
-                config={config}
-                initialData={editingItem}
-                isLoading={createMut.isPending || updateMut.isPending}
-            />
+            {config.customForm ? (
+                config.customForm({
+                    isOpen: isFormOpen,
+                    onClose: () => setIsFormOpen(false),
+                    onSubmit: handleFormSubmit,
+                    initialData: editingItem,
+                    isLoading: createMut.isPending || updateMut.isPending,
+                })
+            ) : (
+                <CrudFormDialog
+                    isOpen={isFormOpen}
+                    onClose={() => setIsFormOpen(false)}
+                    onSubmit={handleFormSubmit}
+                    config={config}
+                    initialData={editingItem}
+                    isLoading={createMut.isPending || updateMut.isPending}
+                />
+            )}
 
             <CrudConfirmDialog
                 isOpen={confirmDialog.isOpen}
