@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { UtensilsCrossed, ChevronRight, Settings2, Loader2, AlertCircle } from 'lucide-react';
 import { whitelistService } from '@/services/whitelist-service';
+import axios from 'axios';
+import { DeviceSessionLogout, DeviceSessionStatus } from '@/components/DeviceAccessGate';
 
 export default function Home() {
   const [cedula, setCedula] = useState('');
@@ -29,8 +31,9 @@ export default function Home() {
       localStorage.setItem('user_cedula', cedula);
       // Redirigir a la página de menús (calendario)
       router.push('/menus');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al verificar la cédula');
+    } catch (err: unknown) {
+      const message = axios.isAxiosError(err) ? err.response?.data?.message : null;
+      setError(typeof message === 'string' ? message : 'Error al verificar la cédula');
     } finally {
       setIsLoading(false);
     }
@@ -41,7 +44,7 @@ export default function Home() {
 
       {/* Header */}
       <header className="bg-[#3b6154]">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-16 py-2 flex flex-wrap gap-3 items-center justify-between">
           {/* Brand */}
           <div className="flex items-center gap-3">
             <UtensilsCrossed size={16} className="text-white" />
@@ -62,9 +65,11 @@ export default function Home() {
               <Settings2 size={18} className="group-hover:rotate-45 transition-transform duration-300" />
               <span className="text-xs font-semibold uppercase tracking-widest hidden sm:block">Admin</span>
             </Link>
+            <DeviceSessionLogout />
           </div>
         </div>
       </header>
+      <DeviceSessionStatus />
 
       <main className="max-w-7xl mx-auto px-6 py-12 xl:py-24 grid grid-cols-1 xl:grid-cols-2 gap-16 items-center min-h-[calc(100vh-4rem-3rem)]">
 
@@ -81,7 +86,9 @@ export default function Home() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              <label htmlFor="employee-cc" className="block text-sm font-medium">Cédula de la persona que va a reservar</label>
               <Input
+                id="employee-cc"
                 placeholder="Número de cédula"
                 value={cedula}
                 onChange={(e) => {
@@ -132,7 +139,7 @@ export default function Home() {
           <div className="flex flex-wrap justify-center xl:justify-start gap-8 md:gap-12 xl:gap-8 pt-4 md:pt-6 xl:pt-4 border-t border-zinc-100 dark:border-zinc-800 w-full max-w-md md:max-w-xl xl:max-w-none">
             <FeatureItem title="Pedidos" desc="Rápidos y simples" />
             <FeatureItem title="Menú diario" desc="Actualizado cada jornada" />
-            <FeatureItem title="Sin internet" desc="Disponible offline" />
+            <FeatureItem title="Acceso seguro" desc="Sesiones de 3 horas" />
           </div>
         </section>
 

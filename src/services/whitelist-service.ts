@@ -1,6 +1,5 @@
-import axios from 'axios';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { apiClient } from './api-client';
+import { getDeviceToken } from './device-session';
 
 export interface WhitelistLoginResponse {
     publicToken: string;
@@ -16,10 +15,12 @@ export const whitelistService = {
      * Stores the session in sessionStorage for the reservation flow.
      */
     async loginByCc(cc: string): Promise<WhitelistLoginResponse> {
-        const { data } = await axios.post<WhitelistLoginResponse>(
-            `${API_URL}/whitelist/login`,
+        const deviceToken = getDeviceToken();
+        const { data } = await apiClient.post<WhitelistLoginResponse>(
+            '/whitelist/login',
             { cc },
         );
+        if (!deviceToken || deviceToken !== getDeviceToken()) throw new Error('La sesión del dispositivo cambió. Ingresa nuevamente.');
         // Persist session for the order flow
         if (typeof window !== 'undefined') {
             sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
@@ -42,5 +43,11 @@ export const whitelistService = {
         if (typeof window !== 'undefined') {
             sessionStorage.removeItem(SESSION_KEY);
         }
+    },
+
+    changeUser() {
+        this.clearSession();
+        localStorage.removeItem('user_cedula');
+        window.location.assign('/');
     },
 };

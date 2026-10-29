@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { authService } from './auth-service';
+import { clearDeviceSession, getDeviceToken } from './device-session';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -18,9 +19,15 @@ export const apiClient: AxiosInstance = axios.create({
 // Request interceptor: Inject Bearer Token
 apiClient.interceptors.request.use(
     async (config: InternalAxiosRequestConfig) => {
-        const token = await authService.getToken();
+        const isAdmin = typeof window !== 'undefined' && (window.location.pathname.startsWith('/admin') || window.location.pathname === '/tickets');
+        const token = isAdmin ? await authService.getToken() : undefined;
         if (token && config.headers) {
             config.headers.Authorization = `Bearer ${token}`;
+        }
+        const deviceToken = getDeviceToken();
+        if (deviceToken) config.headers['X-Device-Session'] = deviceToken;
+        if (config.method === 'get' && /\/(device-access|whitelist|menus|reservations)(\/|$)/.test(config.url || '')) {
+            config.params = { ...config.params, _accessCheck: `${Date.now()}-${Math.random()}` };
         }
 
         // Allow browser to automatically set boundary for FormData
@@ -39,6 +46,9 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
+        if (error.response?.data?.code === 'DEVICE_SESSION_REQUIRED' && typeof window !== 'undefined') {
+            if (error.config?.headers?.['X-Device-Session'] === getDeviceToken()) clearDeviceSession();
+        }
         const originalRequest = error.config;
 
         // Handle 401 Unauthorized (Expired Tokens)
