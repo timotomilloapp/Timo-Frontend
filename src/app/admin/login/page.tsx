@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { authService } from '@/services/auth-service';
-import { UtensilsCrossed, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
+import { UtensilsCrossed, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function AdminLoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -23,6 +24,7 @@ export default function AdminLoginPage() {
 
         try {
             await authService.login({ email, password });
+            setShowPassword(false);
             router.push('/admin');
         } catch (err: unknown) {
             const status = (err as { response?: { status?: number } }).response?.status;
@@ -84,16 +86,25 @@ export default function AdminLoginPage() {
                             onChange={(e) => setEmail(e.target.value)}
                             required
                         />
-                        <Input
-                            label="Contraseña"
-                            labelClassName="text-zinc-900 dark:text-white md:text-base md:mb-2"
-                            className="md:h-14 md:text-lg"
-                            placeholder="••••••••"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                        <div className="space-y-1.5">
+                            <label htmlFor="admin-password" className="ml-1 block text-sm font-medium text-zinc-900 dark:text-white md:text-base md:mb-2">Contraseña</label>
+                            <div className="relative">
+                                <Input
+                                    id="admin-password"
+                                    className="pr-12 md:h-14 md:text-lg"
+                                    placeholder="••••••••"
+                                    type={showPassword ? 'text' : 'password'}
+                                    autoComplete="current-password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    disabled={isLoading}
+                                    required
+                                />
+                                <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-11 w-11 md:h-14 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900" aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} aria-pressed={showPassword} aria-controls="admin-password" disabled={isLoading} onClick={() => setShowPassword(value => !value)}>
+                                    {showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+                                </Button>
+                            </div>
+                        </div>
 
                         <Button
                             type="submit"
