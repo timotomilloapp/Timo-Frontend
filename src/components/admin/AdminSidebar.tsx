@@ -59,6 +59,7 @@ export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
         {
             title: 'General',
             items: [
+                ...(!isUser ? [{ title: 'Acceso de dispositivos', href: '/admin/device-access', icon: <ShieldCheck size={18} />, isActive: pathname === '/admin/device-access' }] : []),
                 {
                     title: 'Dashboard',
                     href: '/admin',

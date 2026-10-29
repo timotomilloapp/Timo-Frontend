@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Coffee, Drumstick, Salad, Check, Loader2, Pencil, Trash2, ReceiptText, X } from 'lucide-react';
 import { reservationService } from '@/services/reservation-service';
-import { authService } from '@/services/auth-service';
+import { whitelistService } from '@/services/whitelist-service';
 
 interface MenuCardProps {
     date: Date;
@@ -280,7 +280,7 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
         //  daremos 30 segundos para que el 
         // Android Print Spooler procese e imprima cómodamente el ticket.
         setTimeout(() => {
-            authService.logout('/');
+            whitelistService.changeUser();
         }, 30000);
     };
 
@@ -586,9 +586,9 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                                 </Button>
                                 <Button
                                     className="flex-1 text-xs font-bold uppercase tracking-wider bg-red-600 hover:bg-red-700 text-white border-none shadow-sm transition-colors duration-300"
-                                    onClick={() => authService.logout('/')}
+                                    onClick={() => whitelistService.changeUser()}
                                 >
-                                    Salir
+                                    Cambiar cédula
                                 </Button>
                             </div>
                         </div>
