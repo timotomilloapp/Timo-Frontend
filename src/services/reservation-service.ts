@@ -42,21 +42,6 @@ export const reservationService = {
     },
 
     /**
-     * Update an existing reservation (e.g. change protein).
-     */
-    async update(id: string, dto: { cc: string; proteinTypeId: string }): Promise<ReservationResponse> {
-        const { data } = await apiClient.patch<ReservationResponse>(`/reservations/${id}`, dto);
-        return data;
-    },
-
-    /**
-     * Delete an existing reservation permanently.
-     */
-    async deleteReservation(id: string, cc: string): Promise<void> {
-        await apiClient.delete(`/reservations/${id}`, { params: { cc } });
-    },
-
-    /**
      * Mark a reservation ticket as printed, making the protein selection immutable.
      */
     async markAsPrinted(id: string): Promise<ReservationResponse> {

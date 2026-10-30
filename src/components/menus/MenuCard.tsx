@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coffee, Drumstick, Salad, Check, Loader2, Pencil, Trash2, ReceiptText, X } from 'lucide-react';
+import { Drumstick, Check, Loader2, ReceiptText } from 'lucide-react';
 import { reservationService } from '@/services/reservation-service';
-import { whitelistService } from '@/services/whitelist-service';
+import { authService } from '@/services/auth-service';
 
 interface MenuCardProps {
     date: Date;
@@ -21,9 +22,8 @@ const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 
 export function MenuCard({ date, menu, isLoading, cedula, userName, onReservationSuccess }: MenuCardProps) {
     const [selectedProteinId, setSelectedProteinId] = useState<string | null>(null);
     const [isReserving, setIsReserving] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const reservationPending = useRef(false);
+    const [createdReservation, setCreatedReservation] = useState<{ menuId: string; id: string } | null>(null);
     const [showTicket, setShowTicket] = useState(false);
     const [reservationError, setReservationError] = useState<string | null>(null);
 
@@ -80,10 +80,13 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
         );
     }
 
-    const { id: menuId, drink, defaultProteinType, proteinOptions, sideOptions, status, hasReservation, reservationId, reservedProteinId, isPrinted } = menu;
+    const { id: menuId, defaultProteinType, proteinOptions, status } = menu;
+    const localReservation = createdReservation?.menuId === menuId ? createdReservation : null;
+    const hasReservation = menu.hasReservation || !!localReservation;
+    const reservationId = menu.reservationId || localReservation?.id;
     const isServed = status === 'SERVED';
-    const showReservedState = hasReservation && !isServed && !isEditing;
-    const isLocked = isServed || showReservedState;
+    const showReservedState = hasReservation && !isServed;
+    const isLocked = isServed || hasReservation || isReserving;
 
     // Preparar lista de proteínas evitando duplicados
     const allProteinsRaw = [
@@ -94,52 +97,25 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
     const allProteins = Array.from(new Map(allProteinsRaw.map(p => [p.id, p])).values());
 
     const handleReserve = async () => {
-        if (!selectedProteinId || isReserving) return;
+        if (!selectedProteinId || hasReservation || isServed || reservationPending.current) return;
+        reservationPending.current = true;
         setIsReserving(true);
         setReservationError(null);
         try {
-            if (isEditing && reservationId) {
-                await reservationService.update(reservationId, {
-                    cc: cedula,
-                    proteinTypeId: selectedProteinId
-                });
-                setIsEditing(false);
-            } else {
-                await reservationService.create({
-                    cc: cedula,
-                    menuId,
-                    proteinTypeId: selectedProteinId
-                });
-            }
+            const reservation = await reservationService.create({
+                cc: cedula,
+                menuId,
+                proteinTypeId: selectedProteinId
+            });
+            setCreatedReservation({ menuId, id: reservation.id });
             onReservationSuccess();
             setShowTicket(true);
-        } catch (error: any) {
-            const apiMessage = error.response?.data?.message;
-            const errorMessage = apiMessage || (isEditing ? 'No se pudo actualizar la reserva.' : 'No se pudo completar la reserva.');
-            setReservationError(Array.isArray(errorMessage) ? errorMessage[0] : errorMessage);
+        } catch (error: unknown) {
+            const apiMessage = axios.isAxiosError(error) ? error.response?.data?.message : null;
+            setReservationError(typeof apiMessage === 'string' ? apiMessage : 'No se pudo completar la reserva.');
         } finally {
+            reservationPending.current = false;
             setIsReserving(false);
-        }
-    };
-
-    const performDeleteReservation = async () => {
-        if (!reservationId || isDeleting) return;
-
-        setIsDeleting(true);
-        setReservationError(null);
-        try {
-            await reservationService.deleteReservation(reservationId, cedula);
-            setIsEditing(false);
-            setShowDeleteConfirm(false);
-            setSelectedProteinId(null);
-            onReservationSuccess();
-        } catch (error: any) {
-            const apiMessage = error.response?.data?.message;
-            const errorMessage = apiMessage || 'No se pudo eliminar la reserva.';
-            setReservationError(Array.isArray(errorMessage) ? errorMessage[0] : errorMessage);
-            setShowDeleteConfirm(false);
-        } finally {
-            setIsDeleting(false);
         }
     };
 
@@ -280,16 +256,16 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
         //  daremos 30 segundos para que el 
         // Android Print Spooler procese e imprima cómodamente el ticket.
         setTimeout(() => {
-            whitelistService.changeUser();
+            authService.logout('/');
         }, 30000);
     };
 
     return (
         <div className="flex flex-col w-full h-full pb-4">
             <Card className={`h-[480px] sm:h-[500px] md:h-[580px] xl:h-[500px] flex flex-col w-full min-w-0 overflow-hidden border-zinc-200 dark:border-zinc-800 transition-all duration-300 ${isServed ? 'bg-zinc-50 dark:bg-zinc-950 opacity-70 grayscale-[0.2]' : 'bg-white dark:bg-zinc-900 ' + (showReservedState ? 'border-[#3b6154]/60 dark:border-[#3b6154]/50 shadow-[0_0_15px_rgba(59,97,84,0.15)] dark:shadow-[0_0_15px_rgba(59,97,84,0.25)]' : 'hover:border-[#3b6154]/50 dark:hover:border-[#3b6154]/50 hover:shadow-[0_8px_25px_rgba(59,97,84,0.15)] dark:hover:shadow-[0_8px_25px_rgba(59,97,84,0.25)]')}`}>
-                <CardHeader className={`border-b border-[#3b6154] dark:border-[#3b6154] flex flex-row !items-center justify-between gap-2 px-4 !grid-none !auto-rows-auto text-white bg-[#3b6154] ${(!showReservedState && !isServed && !isEditing) ? 'py-5 min-h-[80px]' : 'pb-1 pt-4 min-h-[62px]'}`}>
+                <CardHeader className={`border-b border-[#3b6154] dark:border-[#3b6154] flex flex-row !items-center justify-between gap-2 px-4 !grid-none !auto-rows-auto text-white bg-[#3b6154] ${(!showReservedState && !isServed) ? 'py-5 min-h-[80px]' : 'pb-1 pt-4 min-h-[62px]'}`}>
                     <div className="flex flex-col justify-center flex-1 min-w-0">
-                        {(!showReservedState && !isServed && !isEditing) ? (
+                        {(!showReservedState && !isServed) ? (
                             /* ── Estado sin reserva: día + fecha en una sola línea grande ── */
                             <div className="flex flex-col gap-1">
                                 <CardTitle className="text-2xl font-black tracking-tight leading-none text-white">
@@ -322,11 +298,6 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                                             Servido
                                         </span>
                                     )}
-                                    {isEditing && (
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#3b6154] bg-white px-2 py-0.5 rounded-full shrink-0">
-                                            Editando
-                                        </span>
-                                    )}
                                 </div>
                             </>
                         )}
@@ -337,34 +308,11 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                             <div className="flex bg-white/10 border border-white/20 rounded-md overflow-hidden disabled:opacity-50">
                                 <button
                                     onClick={() => setShowTicket(true)}
-                                    disabled={isDeleting}
                                     className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 transition-colors"
                                     title="Ver ticket de reserva"
                                 >
                                     <ReceiptText size={14} />
                                 </button>
-                                {isTomorrowOrLater && (
-                                    <>
-                                        <div className="w-px bg-white/20"></div>
-                                        <button
-                                            onClick={() => !isPrinted && setIsEditing(true)}
-                                            disabled={isDeleting || isPrinted}
-                                            className={`p-1.5 transition-colors ${isPrinted ? 'text-white/30 cursor-not-allowed' : 'text-white/80 hover:text-white hover:bg-white/20'}`}
-                                            title={isPrinted ? "Ticket impreso, edición bloqueada" : "Editar reserva"}
-                                        >
-                                            <Pencil size={14} />
-                                        </button>
-                                        <div className="w-px bg-white/20"></div>
-                                        <button
-                                            onClick={() => setShowDeleteConfirm(true)}
-                                            disabled={isDeleting}
-                                            className="p-1.5 text-white/80 hover:text-red-400 hover:bg-red-500/20 transition-colors"
-                                            title="Eliminar reserva"
-                                        >
-                                            {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                                        </button>
-                                    </>
-                                )}
                             </div>
                         )}
                     </div>
@@ -462,7 +410,7 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
             </Card>
 
             {/* Acciones de Reserva Flotando Debajo */}
-            {!isServed && !showReservedState && (selectedProteinId || isEditing) && (
+            {!isServed && !showReservedState && selectedProteinId && (
                 <div className="mt-4 flex flex-col gap-3 px-1 animate-in slide-in-from-top-2 fade-in duration-200">
                     {reservationError && (
                         <p className="text-xs text-red-600 dark:text-red-400 text-center font-medium">
@@ -480,55 +428,9 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                                 <Loader2 size={14} className="animate-spin" />
                                 Guardando...
                             </span>
-                        ) : (isEditing ? 'Guardar Cambios' : 'RESERVAR')}
+                        ) : 'RESERVAR'}
                     </Button>
 
-                    {isEditing && (
-                        <Button
-                            variant="outline"
-                            className="w-full text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 bg-transparent dark:bg-transparent rounded-xl h-auto py-3"
-                            onClick={() => {
-                                setIsEditing(false);
-                                setSelectedProteinId(reservedProteinId || null);
-                                setReservationError(null);
-                            }}
-                            disabled={isReserving}
-                        >
-                            Cancelar edición
-                        </Button>
-                    )}
-                </div>
-            )}
-
-            {/* Modal de Confirmación de Eliminación Personalizado */}
-            {showDeleteConfirm && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-[2px] flex-col">
-                    <div className="w-56 p-4 shadow-xl border border-red-200/50 dark:border-red-900/30 bg-white dark:bg-zinc-900 rounded-xl animate-in fade-in zoom-in-95 duration-200 flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-3 text-red-600 dark:text-red-500">
-                            <Trash2 size={18} />
-                        </div>
-                        <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-1.5 leading-tight text-center">¿Eliminar Reserva?</h3>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center mb-5 leading-relaxed">
-                            Puedes quedarte sin proteína asignada.
-                        </p>
-                        <div className="flex gap-2 w-full">
-                            <Button
-                                variant="outline"
-                                className="flex-1 text-[10px] h-8 font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 px-0 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                                onClick={() => setShowDeleteConfirm(false)}
-                                disabled={isDeleting}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                className="flex-1 text-[10px] h-8 font-bold uppercase tracking-wider bg-red-600 hover:bg-red-700 text-white border-none px-0 shadow-sm"
-                                onClick={performDeleteReservation}
-                                disabled={isDeleting}
-                            >
-                                {isDeleting ? <Loader2 size={12} className="animate-spin" /> : 'Eliminar'}
-                            </Button>
-                        </div>
-                    </div>
                 </div>
             )}
 
@@ -586,9 +488,9 @@ export function MenuCard({ date, menu, isLoading, cedula, userName, onReservatio
                                 </Button>
                                 <Button
                                     className="flex-1 text-xs font-bold uppercase tracking-wider bg-red-600 hover:bg-red-700 text-white border-none shadow-sm transition-colors duration-300"
-                                    onClick={() => whitelistService.changeUser()}
+                                    onClick={() => authService.logout('/')}
                                 >
-                                    Cambiar cédula
+                                    Salir
                                 </Button>
                             </div>
                         </div>
