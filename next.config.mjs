@@ -7,10 +7,6 @@ const withPWA = withPWAInit({
     skipWaiting: true,
     runtimeCaching: [
         {
-            urlPattern: ({ url }) => /\/(device-access|whitelist|menus|reservations)(\/|$)/.test(url.pathname),
-            handler: 'NetworkOnly',
-        },
-        {
             // Cache-first for images/assets
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|woff2?)$/,
             handler: 'CacheFirst',
